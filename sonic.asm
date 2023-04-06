@@ -10,7 +10,16 @@
 		opt	l@					; @ is the local label symbol
 		opt	ae-					; automatic evens are disabled by default
 		opt	ws+					; allow statements to contain white-spaces
-		opt	w+					; print warnings
+
+		opt	oz+								; enable zero-displacement optimization by default
+		opt	op+								; enable pc relative optimization by default
+		opt	ow+								; enable absolute word addressing optimization by default
+		opt	os+								; enable short branch optimization by default
+		opt	oaq+								; enable addq optimization by default
+		opt	osq+								; enable subq optimization by default
+		opt	omq+								; enable moveq optimization by default
+
+		opt	w-					; print warnings
 		opt	m+					; do not expand macros - if enabled, this can break assembling
 
 		include "Mega Drive.asm"

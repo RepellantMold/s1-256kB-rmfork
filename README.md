@@ -5,7 +5,7 @@ Can I get Sonic the Hedgehog to fit into 256kB?
 ## Rules
 
 * Must be hardware compatible.
-* Normal gameplay must appear the same. Debug mode can go.
+* Normal gameplay must appear the same, Debug mode can go.
 * Extra loading time is allowed.
 
 ## Methods
@@ -87,6 +87,7 @@ Added SetupObject subroutine to initialise OST values with a script. | 449170 | 
 Used SetupObject for more objects. | 448328 | -842
 Extended SetupObject functionality. | 448174 | -154
 Used SetupObject for all objects. | 446986 | -1188
+Roll up some system macros into functions. | 446552 | -434
 Target | 262144 | 
 
 ## Credits

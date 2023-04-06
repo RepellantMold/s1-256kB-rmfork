@@ -7,23 +7,11 @@
 
 ; sub_71B4C:
 UpdateSound:
-		stopZ80
-		nop
-		nop
-		nop
-; loc_71B5A:
-@updateloop:
-		btst	#0,(z80_bus_request).l		; Is the z80 busy?
-		bne.s	@updateloop			; If so, wait
-
+		jsr	(StoptheZ80).l
+		jsr	(WaitforZ80).l
 		btst	#7,(z80_dac_status).l		; Is DAC accepting new samples?
 		beq.s	@driverinput			; Branch if yes
-		startZ80
-		nop
-		nop
-		nop
-		nop
-		nop
+		jsr	(StarttheZ80).l
 		bra.s	UpdateSound
 ; ===========================================================================
 ; loc_71B82:
@@ -123,8 +111,7 @@ UpdateSound:
 		jsr	PSGUpdateTrack(pc)
 ; loc_71C44:
 DoStartZ80:
-		startZ80
-		rts
+		jmp	(StarttheZ80).l
 ; End of function UpdateSound
 
 
