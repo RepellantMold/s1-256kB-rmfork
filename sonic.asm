@@ -116,9 +116,7 @@ SegaPCM:	incbin	"\SegaPCM_File"
 ; Crash/Freeze the 68000. Unlike Sonic 2, Sonic 1 uses the 68000 for playing music, so it stops too
 
 ErrorTrap:
-		nop
-		nop
-		bra.s	ErrorTrap
+		stop	#$2700
 ; ===========================================================================
 
 		include	"Includes\Mega Drive Setup.asm"		; EntryPoint
@@ -164,7 +162,6 @@ GameModeArray:
 		gmptr Continue					; Continue Screen ($14)
 		gmptr Ending					; End of game sequence ($18)
 		gmptr Credits					; Credits ($1C)
-		rts
 ; ===========================================================================
 
 KosArt_Text:	incbin	"kosdata\Level Select Text.kos" ; text used in level select and debug mode

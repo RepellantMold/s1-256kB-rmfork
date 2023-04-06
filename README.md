@@ -88,6 +88,7 @@ Used SetupObject for more objects. | 448328 | -842
 Extended SetupObject functionality. | 448174 | -154
 Used SetupObject for all objects. | 446986 | -1188
 Roll up some system macros into functions. | 446552 | -434
+Roll up repeated routines into functions (VBlank) | 445694 | -858
 Target | 262144 | 
 
 ## Credits

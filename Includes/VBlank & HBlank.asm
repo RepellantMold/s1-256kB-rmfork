@@ -54,29 +54,56 @@ VBlank_Lag:
 		cmpi.b	#$80+id_Level,(v_gamemode).w		; is game on level init sequence?
 		beq.s	@islevel				; if yes, branch
 		cmpi.b	#id_Level,(v_gamemode).w		; is game on a level proper?
-		bne.w	VBlank_Music				; if not, branch
+		bne.s	VBlank_Music				; if not, branch
 
 	@islevel:
 		cmpi.b	#id_LZ,(v_zone).w			; is level LZ ?
-		bne.w	VBlank_Music				; if not, branch
+		bne.s	VBlank_Music				; if not, branch
 
 		;move.w	(vdp_control_port).l,d0
 		st.b	(f_hblank_pal_change).w		; set flag to let HBlank know a frame has finished
 		bsr.w	StoptheZ80
-		bsr.w	WaitforZ80
-		tst.b	(f_water_pal_full).w			; is water covering the whole screen?
-		bne.s	@allwater				; if yes, branch
-
-		dma	v_pal_dry,sizeof_pal_all,cram		; copy normal palette to CRAM (water palette will be copied by HBlank later)
-		bra.s	@waterbelow
-
-	@allwater:
-		dma	v_pal_water,sizeof_pal_all,cram		; copy water palette to CRAM
-
-	@waterbelow:
+		bsr.s	DMALevelPalette				; copy palette to CRAM
 		move.w	(v_vdp_hint_counter).w,(a5)		; set water palette position by sending VDP register $8Axx to control port (vdp_control_port)
 		bsr.w	StarttheZ80
-		bra.w	VBlank_Music
+		bra.s	VBlank_Music
+; ===========================================================================
+; Rolled up things! (with some basic names)
+DMALevelPalette:
+		tst.b	(f_water_pal_full).w			; is water covering the whole screen?
+		bne.s	DMALevelPalette_allwater		; if yes, branch
+
+DMAPalette:
+		dma	v_pal_dry,sizeof_pal_all,cram		; copy normal palette to CRAM (water palette will be copied by HBlank later)
+		bra.s	DMALevelPalette_waterbelow
+
+DMALevelPalette_allwater:
+		dma	v_pal_water,sizeof_pal_all,cram		; copy water palette to CRAM
+
+DMALevelPalette_waterbelow:
+		rts
+
+DMABuffers:
+		dma	v_hscroll_buffer,sizeof_vram_hscroll,vram_hscroll
+		dma	v_sprite_buffer,sizeof_vram_sprites,vram_sprites
+		rts
+
+DMASonicArt:
+		tst.b	(f_sonic_dma_gfx).w			; has Sonic's sprite changed?
+		beq.s	@nochg					; if not, branch
+
+		dma	v_sonic_gfx_buffer,sizeof_vram_sonic,vram_sonic ; copy new Sonic gfx to VRAM
+		sf.b	(f_sonic_dma_gfx).w
+
+	@nochg:
+		rts
+
+DuplicateCameraRAM:	
+		movem.l	(v_camera_x_pos).w,d0-d7		; copy all camera & bg x/y positions to d0-d7
+		movem.l	d0-d7,(v_camera_x_pos_copy).w		; create duplicates in RAM
+		movem.l	(v_fg_redraw_direction).w,d0-d1		; copy all fg/bg redraw direction flags to d0-d1
+		movem.l	d0-d1,(v_fg_redraw_direction_copy).w	; create duplicates in RAM
+		rts
 ; ===========================================================================
 
 ; 2 - GM_Sega> Sega_WaitPal, Sega_WaitEnd
@@ -86,7 +113,7 @@ VBlank_Sega:
 ; $14 - GM_Sega> Sega_WaitPal (once)
 VBlank_Sega_SkipLoad:
 		tst.w	(v_countdown).w
-		beq.w	@end
+		beq.s	@end
 		subq.w	#1,(v_countdown).w			; decrement timer
 
 	@end:
@@ -98,50 +125,25 @@ VBlank_Title:
 		bsr.w	ReadPad_Palette_Sprites_HScroll		; read joypad, DMA palettes, sprites and hscroll
 		bsr.w	DrawTilesWhenMoving_BGOnly		; update background
 		bsr.w	ProcessPLC				; decompress up to 9 cells of Nemesis gfx if needed
-		tst.w	(v_countdown).w
-		beq.w	@end
-		subq.w	#1,(v_countdown).w			; decrement timer
-
-	@end:
-		rts	
+		bra.s	VBlank_Sega_SkipLoad	
 ; ===========================================================================
 
 ; $10 - PauseGame> Pause_Loop
 VBlank_Pause:
 		cmpi.b	#id_Special,(v_gamemode).w		; is game on special stage?
-		beq.w	VBlank_Special				; if yes, branch
+		beq.s	VBlank_Special				; if yes, branch
 
 ; 8 - GM_Level> Level_MainLoop, Level_FDLoop, Level_DelayLoop
 VBlank_Level:
 		bsr.w	StoptheZ80
-		bsr.w	WaitforZ80
 		bsr.w	ReadJoypads
-		tst.b	(f_water_pal_full).w			; is water covering the whole screen?
-		bne.s	@allwater				; if yes, branch
-
-		dma	v_pal_dry,sizeof_pal_all,cram		; copy normal palette to CRAM (water palette will be copied by HBlank later)
-		bra.s	@waterbelow
-
-	@allwater:
-		dma	v_pal_water,sizeof_pal_all,cram		; copy water palette to CRAM
-
-	@waterbelow:
+		bsr.w	DMALevelPalette				; copy palette to CRAM
 		move.w	(v_vdp_hint_counter).w,(a5)		; set water palette position by sending VDP register $8Axx to control port (vdp_control_port)
 
-		dma	v_hscroll_buffer,sizeof_vram_hscroll,vram_hscroll
-		dma	v_sprite_buffer,sizeof_vram_sprites,vram_sprites
-		tst.b	(f_sonic_dma_gfx).w			; has Sonic's sprite changed?
-		beq.s	@nochg					; if not, branch
-
-		dma	v_sonic_gfx_buffer,sizeof_vram_sonic,vram_sonic ; copy new Sonic gfx to VRAM
-		move.b	#0,(f_sonic_dma_gfx).w
-
-	@nochg:
+		bsr.w	DMABuffers
+		bsr.w	DMASonicArt				; copy Sonic gfx to VRAM
 		bsr.w	StarttheZ80
-		movem.l	(v_camera_x_pos).w,d0-d7		; copy all camera & bg x/y positions to d0-d7
-		movem.l	d0-d7,(v_camera_x_pos_copy).w		; create duplicates in RAM
-		movem.l	(v_fg_redraw_direction).w,d0-d1		; copy all fg/bg redraw direction flags to d0-d1
-		movem.l	d0-d1,(v_fg_redraw_direction_copy).w	; create duplicates in RAM
+		bsr.w	DuplicateCameraRAM
 		cmpi.b	#96,(v_vdp_hint_line).w			; is HBlank set to run on line 96 or below? (42% of the way down the screen)
 		bhs.s	DrawTiles_LevelGfx_HUD_PLC		; if yes, branch
 		move.b	#1,(f_hblank_run_snd).w			; set flag to run sound driver on HBlank
@@ -158,38 +160,20 @@ DrawTiles_LevelGfx_HUD_PLC:
 		jsr	(AnimateLevelGfx).l			; update animated level graphics
 		jsr	(HUD_Update).l				; update HUD graphics
 		bsr.w	ProcessPLC2				; decompress up to 3 cells of Nemesis gfx
-		tst.w	(v_countdown).w
-		beq.w	@end
-		subq.w	#1,(v_countdown).w			; decrement timer
-
-	@end:
-		rts
+		bra.w	VBlank_Sega_SkipLoad
 
 ; ===========================================================================
 
 ; $A - GM_Special> SS_MainLoop
 VBlank_Special:
 		bsr.w	StoptheZ80
-		bsr.w	WaitforZ80
 		bsr.w	ReadJoypads
-		dma	v_pal_dry,sizeof_pal_all,cram		; copy palette to CRAM
-		dma	v_sprite_buffer,sizeof_vram_sprites,vram_sprites
-		dma	v_hscroll_buffer,sizeof_vram_hscroll,vram_hscroll
-		tst.b	(f_sonic_dma_gfx).w			; has Sonic's sprite changed?
-		beq.s	@nochg					; if not, branch
-
-		dma	v_sonic_gfx_buffer,sizeof_vram_sonic,vram_sonic ; copy new Sonic gfx to VRAM
-		move.b	#0,(f_sonic_dma_gfx).w
-
-	@nochg:
+		bsr.w	DMAPalette				; copy palette to CRAM
+		bsr.w	DMABuffers
+		bsr.w	DMASonicArt				; copy Sonic gfx to VRAM
 		bsr.w	StarttheZ80
 		bsr.w	PalCycle_SS				; update cycling palette
-		tst.w	(v_countdown).w
-		beq.w	@end
-		subq.w	#1,(v_countdown).w			; decrement timer
-
-	@end:
-		rts	
+		bra.w	VBlank_Sega_SkipLoad
 ; ===========================================================================
 
 ; $C - GM_Level> Level_TtlCardLoop; GM_Special> SS_NormalExit
@@ -197,33 +181,12 @@ VBlank_Special:
 VBlank_TitleCard:
 VBlank_Ending:
 		bsr.w	StoptheZ80
-		bsr.w	WaitforZ80
 		bsr.w	ReadJoypads
-		tst.b	(f_water_pal_full).w			; is water covering the whole screen?
-		bne.s	@allwater				; if yes, branch
-
-		dma	v_pal_dry,sizeof_pal_all,cram		; copy normal palette to CRAM (water palette will be copied by HBlank later)
-		bra.s	@waterbelow
-
-	@allwater:
-		dma	v_pal_water,sizeof_pal_all,cram		; copy water palette to CRAM
-
-	@waterbelow:
-		move.w	(v_vdp_hint_counter).w,(a5)		; set water palette position by sending VDP register $8Axx to control port (vdp_control_port)
-		dma	v_hscroll_buffer,sizeof_vram_hscroll,vram_hscroll
-		dma	v_sprite_buffer,sizeof_vram_sprites,vram_sprites
-		tst.b	(f_sonic_dma_gfx).w			; has Sonic's sprite changed?
-		beq.s	@nochg					; if not, branch
-
-		dma	v_sonic_gfx_buffer,sizeof_vram_sonic,vram_sonic ; copy new Sonic gfx to VRAM
-		move.b	#0,(f_sonic_dma_gfx).w
-
-	@nochg:
+		bsr.w	DMALevelPalette				; copy palette to CRAM
+		bsr.w	DMABuffers
+		bsr.w	DMASonicArt				; copy Sonic gfx to VRAM
 		bsr.w	StarttheZ80
-		movem.l	(v_camera_x_pos).w,d0-d7		; copy all camera & bg x/y positions to d0-d7
-		movem.l	d0-d7,(v_camera_x_pos_copy).w		; create duplicates in RAM
-		movem.l	(v_fg_redraw_direction).w,d0-d1		; copy all fg/bg redraw direction flags to d0-d1
-		movem.l	d0-d1,(v_fg_redraw_direction_copy).w	; create duplicates in RAM
+		bsr.w	DuplicateCameraRAM
 		bsr.w	DrawTilesWhenMoving			; display new tiles if camera has moved
 		jsr	(AnimateLevelGfx).l			; update animated level graphics
 		jsr	(HUD_Update).l				; update HUD graphics
@@ -233,32 +196,18 @@ VBlank_Ending:
 ; $12 - PaletteWhiteIn, PaletteWhiteOut, PaletteFadeIn, PaletteFadeOut
 VBlank_Fade:
 		bsr.w	ReadPad_Palette_Sprites_HScroll		; read joypad, DMA palettes, sprites and hscroll
-		move.w	(v_vdp_hint_counter).w,(a5)		; set water palette position by sending VDP register $8Axx to control port (vdp_control_port)
 		bra.w	ProcessPLC				; decompress up to 9 cells of Nemesis gfx
 ; ===========================================================================
 
 ; $16 - GM_Special> SS_FinLoop; GM_Continue> Cont_MainLoop
 VBlank_Continue:
 		bsr.w	StoptheZ80
-		bsr.w	WaitforZ80
 		bsr.w	ReadJoypads
-		dma	v_pal_dry,sizeof_pal_all,cram		; copy palette to CRAM
-		dma	v_sprite_buffer,sizeof_vram_sprites,vram_sprites
-		dma	v_hscroll_buffer,sizeof_vram_hscroll,vram_hscroll
-		tst.b	(f_sonic_dma_gfx).w			; has Sonic's sprite changed?
-		beq.s	@nochg					; if not, branch
-
-		dma	v_sonic_gfx_buffer,sizeof_vram_sonic,vram_sonic ; copy new Sonic gfx to VRAM
-		move.b	#0,(f_sonic_dma_gfx).w
-
-	@nochg:
+		bsr.w	DMAPalette				; copy palette to CRAM
+		bsr.w	DMABuffers
+		bsr.w	DMASonicArt				; copy Sonic gfx to VRAM
 		bsr.w	StarttheZ80
-		tst.w	(v_countdown).w
-		beq.w	@end
-		subq.w	#1,(v_countdown).w			; decrement timer
-
-	@end:
-		rts	
+		bra.w	VBlank_Sega_SkipLoad
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to read joypad and DMA palettes, sprite table and hscroll table
@@ -266,19 +215,9 @@ VBlank_Continue:
 
 ReadPad_Palette_Sprites_HScroll:
 		bsr.w	StoptheZ80
-		bsr.w	WaitforZ80
 		bsr.w	ReadJoypads
-		tst.b	(f_water_pal_full).w			; is water covering the whole screen?
-		bne.s	@allwater				; if yes, branch
-		dma	v_pal_dry,sizeof_pal_all,cram		; copy normal palette to CRAM (water palette will be copied by HBlank later)
-		bra.s	@waterbelow
-
-	@allwater:
-		dma	v_pal_water,sizeof_pal_all,cram		; copy water palette to CRAM
-
-	@waterbelow:
-		dma	v_sprite_buffer,sizeof_vram_sprites,vram_sprites
-		dma	v_hscroll_buffer,sizeof_vram_hscroll,vram_hscroll
+		bsr.w	DMALevelPalette				; copy palette to CRAM
+		bsr.w	DMABuffers
 		bra.w	StarttheZ80
 
 ; ---------------------------------------------------------------------------
@@ -290,15 +229,16 @@ HBlank:
 		tst.b	(f_hblank_pal_change).w			; is palette set to change during HBlank?
 		beq.s	@nochg					; if not, branch
 		sf.b	(f_hblank_pal_change).w
-		movem.l	a0-a1,-(sp)				; save a0-a1 to stack
+		movem.l	d0/a0-a1,-(sp)				; save a0-a1 to stack
 		lea	(vdp_data_port).l,a1
 		lea	(v_pal_water).w,a0			; get palette from RAM
 		move.l	#$C0000000,4(a1)			; set VDP to CRAM write
-		rept sizeof_pal_all/4
+		move.w	#sizeof_pal_all/4-1,d0
+	@loop:
 		move.l	(a0)+,(a1)				; copy palette to CRAM
-		endr
+		dbf	d0,@loop
 		move.w	#$8A00+223,4(a1)			; reset HBlank register
-		movem.l	(sp)+,a0-a1				; restore a0-a1 from stack
+		movem.l	(sp)+,d0/a0-a1				; restore a0-a1 from stack
 		tst.b	(f_hblank_run_snd).w			; is flag set to update sound & some graphics during HBlank?
 		bne.s	@update_hblank				; if yes, branch
 
