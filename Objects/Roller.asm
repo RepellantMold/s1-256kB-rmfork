@@ -15,8 +15,8 @@ Roll_Index:	index *,,2
 		ptr Roll_Main
 		ptr Roll_Action
 
-ost_roller_open_time:	equ $30					; time roller stays open for (2 bytes)
-ost_roller_mode:	equ $32					; +1 = roller has jumped; +$80 = roller has stopped
+ost_roller_open_time:	equ $30				; time roller stays open for (2 bytes)
+ost_roller_mode:	equ $32				; +1 = roller has jumped; +$80 = roller has stopped
 
 Roll_Settings:	dc.b ost_height,14
 		dc.b ost_width,8
@@ -34,13 +34,13 @@ Roll_Settings:	dc.b ost_height,14
 Roll_Main:	; Routine 0
 		lea	Roll_Settings(pc),a2
 		bsr.w	SetupObject
-		bsr.w	ObjectFall				; apply gravity and update position
+		bsr.w	ObjectFall			; apply gravity and update position
 		bsr.w	FindFloorObj
-		tst.w	d1					; has roller hit the floor?
-		bpl.s	@no_floor				; if not, branch
-		add.w	d1,ost_y_pos(a0)			; align to floor
-		move.w	#0,ost_y_vel(a0)			; stop falling
-		addq.b	#2,ost_routine(a0)			; goto Roll_Action next
+		tst.w	d1				; has roller hit the floor?
+		bpl.s	@no_floor			; if not, branch
+		add.w	d1,ost_y_pos(a0)		; align to floor
+		move.w	#0,ost_y_vel(a0)		; stop falling
+		addq.b	#2,ost_routine(a0)		; goto Roll_Action next
 
 	@no_floor:
 		rts	
@@ -83,13 +83,13 @@ Roll_Index2:	index *,,2
 
 Roll_RollChk:
 		move.w	(v_ost_player+ost_x_pos).w,d0
-		subi.w	#$100,d0				; d0 = Sonic's x position minus $100
-		bcs.s	@exit					; branch if Sonic is < 256px from left edge of level
-		sub.w	ost_x_pos(a0),d0			; is Sonic > 256px left of the roller?
-		bcs.s	@exit					; if not, branch
-		addq.b	#id_Roll_ChkJump,ost_routine2(a0)	; goto Roll_ChkJump next
-		move.b	#id_ani_roll_roll,ost_anim(a0)		; use roller's rolling animation
-		move.w	#$700,ost_x_vel(a0)			; move roller to the right
+		subi.w	#$100,d0			; d0 = Sonic's x position minus $100
+		bcs.s	@exit				; branch if Sonic is < 256px from left edge of level
+		sub.w	ost_x_pos(a0),d0		; is Sonic > 256px left of the roller?
+		bcs.s	@exit				; if not, branch
+		addq.b	#id_Roll_ChkJump,ost_routine2(a0) ; goto Roll_ChkJump next
+		move.b	#id_ani_roll_roll,ost_anim(a0)	; use roller's rolling animation
+		move.w	#$700,ost_x_vel(a0)		; move roller to the right
 		move.b	#id_col_14x14+id_col_hurt,ost_col_type(a0) ; make roller invincible
 
 	@exit:
@@ -98,12 +98,12 @@ Roll_RollChk:
 ; ===========================================================================
 
 Roll_Stopped:
-		cmpi.b	#id_ani_roll_roll,ost_anim(a0)		; is roller still rolling?
-		beq.s	@is_rolling				; if yes, branch
-		subq.w	#1,ost_roller_open_time(a0)		; decrement timer
-		bpl.s	@wait					; branch if time remains
-		move.b	#id_ani_roll_fold,ost_anim(a0)		; use curling animation
-		move.w	#$700,ost_x_vel(a0)			; move roller right
+		cmpi.b	#id_ani_roll_roll,ost_anim(a0)	; is roller still rolling?
+		beq.s	@is_rolling			; if yes, branch
+		subq.w	#1,ost_roller_open_time(a0)	; decrement timer
+		bpl.s	@wait				; branch if time remains
+		move.b	#id_ani_roll_fold,ost_anim(a0)	; use curling animation
+		move.w	#$700,ost_x_vel(a0)		; move roller right
 		move.b	#id_col_14x14+id_col_hurt,ost_col_type(a0) ; make roller invincible
 
 	@wait:
@@ -111,42 +111,42 @@ Roll_Stopped:
 ; ===========================================================================
 
 @is_rolling:
-		addq.b	#2,ost_routine2(a0)			; goto Roll_ChkJump next
+		addq.b	#2,ost_routine2(a0)		; goto Roll_ChkJump next
 		rts	
 ; ===========================================================================
 
 Roll_ChkJump:
-		bsr.w	Roll_Stop				; stop rolling if it's within range of Sonic
-		bsr.w	SpeedToPos				; update position
+		bsr.w	Roll_Stop			; stop rolling if it's within range of Sonic
+		bsr.w	SpeedToPos			; update position
 		bsr.w	FindFloorObj
 		cmpi.w	#-8,d1
-		blt.s	Roll_Jump				; branch if more than 8px below floor
+		blt.s	Roll_Jump			; branch if more than 8px below floor
 		cmpi.w	#$C,d1
-		bge.s	Roll_Jump				; branch if more than 11px above floor (also detects a ledge)
-		add.w	d1,ost_y_pos(a0)			; align to floor
+		bge.s	Roll_Jump			; branch if more than 11px above floor (also detects a ledge)
+		add.w	d1,ost_y_pos(a0)		; align to floor
 		rts	
 ; ===========================================================================
 
 Roll_Jump:
-		addq.b	#2,ost_routine2(a0)			; goto Roll_JumpLand next
-		bset	#0,ost_roller_mode(a0)			; set jump flag
-		beq.s	@dont_jump				; branch if previously 0 (jumps on next frame instead)
-		move.w	#-$600,ost_y_vel(a0)			; move roller upwards
+		addq.b	#2,ost_routine2(a0)		; goto Roll_JumpLand next
+		bset	#0,ost_roller_mode(a0)		; set jump flag
+		beq.s	@dont_jump			; branch if previously 0 (jumps on next frame instead)
+		move.w	#-$600,ost_y_vel(a0)		; move roller upwards
 
 	@dont_jump:
 		rts	
 ; ===========================================================================
 
 Roll_JumpLand:
-		bsr.w	ObjectFall				; apply gravity and update position
+		bsr.w	ObjectFall			; apply gravity and update position
 		tst.w	ost_y_vel(a0)
-		bmi.s	@exit					; branch if moving upwards
+		bmi.s	@exit				; branch if moving upwards
 		bsr.w	FindFloorObj
-		tst.w	d1					; has roller hit the floor?
-		bpl.s	@exit					; if not, branch
-		add.w	d1,ost_y_pos(a0)			; align to floor
-		subq.b	#2,ost_routine2(a0)			; goto Roll_ChkJump next
-		move.w	#0,ost_y_vel(a0)			; stop falling
+		tst.w	d1				; has roller hit the floor?
+		bpl.s	@exit				; if not, branch
+		add.w	d1,ost_y_pos(a0)		; align to floor
+		subq.b	#2,ost_routine2(a0)		; goto Roll_ChkJump next
+		move.w	#0,ost_y_vel(a0)		; stop falling
 
 @exit:
 		rts	
@@ -156,18 +156,18 @@ Roll_JumpLand:
 ; ---------------------------------------------------------------------------
 
 Roll_Stop:
-		tst.b	ost_roller_mode(a0)			; has roller already stopped?
-		bmi.s	@exit					; if yes, branch
+		tst.b	ost_roller_mode(a0)		; has roller already stopped?
+		bmi.s	@exit				; if yes, branch
 		move.w	(v_ost_player+ost_x_pos).w,d0
 		subi.w	#$30,d0
 		sub.w	ost_x_pos(a0),d0
-		bcc.s	@exit					; branch if Sonic is > 48px left of the roller
+		bcc.s	@exit				; branch if Sonic is > 48px left of the roller
 		move.b	#id_ani_roll_unfold,ost_anim(a0)
 		move.b	#id_col_14x14,ost_col_type(a0)
-		clr.w	ost_x_vel(a0)				; stop roller moving
-		move.w	#120,ost_roller_open_time(a0)		; set waiting time to 2 seconds
-		move.b	#id_Roll_Stopped,ost_routine2(a0)	; goto Roll_Stopped next
-		bset	#7,ost_roller_mode(a0)			; set flag for roller stopped
+		clr.w	ost_x_vel(a0)			; stop roller moving
+		move.w	#120,ost_roller_open_time(a0)	; set waiting time to 2 seconds
+		move.b	#id_Roll_Stopped,ost_routine2(a0) ; goto Roll_Stopped next
+		bset	#7,ost_roller_mode(a0)		; set flag for roller stopped
 
 	@exit:
 		rts	

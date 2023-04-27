@@ -12,11 +12,11 @@ psg_input:		equ $C00011
 debug_reg:		equ $C0001C
 
 ; Z80 addresses
-z80_ram:		equ $A00000	; start of Z80 RAM
+z80_ram:		equ $A00000			; start of Z80 RAM
 z80_dac3_pitch:		equ $A000EA
 z80_dac_status:		equ $A01FFD
 z80_dac_sample:		equ $A01FFF
-z80_ram_end:		equ $A02000	; end of non-reserved Z80 RAM
+z80_ram_end:		equ $A02000			; end of non-reserved Z80 RAM
 ym2612_a0:		equ $A04000
 ym2612_d0:		equ $A04001
 ym2612_a1:		equ $A04002
@@ -43,14 +43,14 @@ z80_reset:		equ $A11200
 
 ; Bank registers, et al
 sram_access_reg:	equ $A130F1
-bank_reg_1:		equ $A130F3	; Bank register for address $80000-$FFFFF
-bank_reg_2:		equ $A130F5	; Bank register for address $100000-$17FFFF
-bank_reg_3:		equ $A130F7	; Bank register for address $180000-$1FFFFF
-bank_reg_4:		equ $A130F9	; Bank register for address $200000-$27FFFF
-bank_reg_5:		equ $A130FB	; Bank register for address $280000-$2FFFFF
-bank_reg_6:		equ $A130FD	; Bank register for address $300000-$37FFFF
-bank_reg_7:		equ $A130FF	; Bank register for address $380000-$3FFFFF
-tmss_sega:		equ $A14000	; contains the string "SEGA"
+bank_reg_1:		equ $A130F3			; Bank register for address $80000-$FFFFF
+bank_reg_2:		equ $A130F5			; Bank register for address $100000-$17FFFF
+bank_reg_3:		equ $A130F7			; Bank register for address $180000-$1FFFFF
+bank_reg_4:		equ $A130F9			; Bank register for address $200000-$27FFFF
+bank_reg_5:		equ $A130FB			; Bank register for address $280000-$2FFFFF
+bank_reg_6:		equ $A130FD			; Bank register for address $300000-$37FFFF
+bank_reg_7:		equ $A130FF			; Bank register for address $380000-$3FFFFF
+tmss_sega:		equ $A14000			; contains the string "SEGA"
 tmss_reg:		equ $A14101
 
 ; ---------------------------------------------------------------------------

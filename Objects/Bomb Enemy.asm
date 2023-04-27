@@ -18,9 +18,9 @@ Bom_Index:	index *,,2
 		ptr Bom_Fuse
 		ptr Bom_Shrapnel
 
-ost_bomb_fuse_time:	equ $30					; time left on fuse - also used for change direction timer (2 bytes)
-ost_bomb_y_start:	equ $34					; original y-axis position (2 bytes)
-ost_bomb_parent:	equ $3C					; address of OST of parent object (4 bytes)
+ost_bomb_fuse_time:	equ $30				; time left on fuse - also used for change direction timer (2 bytes)
+ost_bomb_y_start:	equ $34				; original y-axis position (2 bytes)
+ost_bomb_parent:	equ $3C				; address of OST of parent object (4 bytes)
 
 Bom_Settings:	dc.b ost_priority,3
 		dc.b ost_actwidth,12
@@ -41,8 +41,8 @@ Bom_Main:	; Routine 0
 		move.w	#$492,ost_tile(a0)
 	@not_sbz:
 		move.b	ost_subtype(a0),d0
-		beq.s	@type0					; branch if subtype = 0
-		move.b	d0,ost_routine(a0)			; copy subtype to routine (4 = Bom_Fuse; 6 = Bom_Shrapnel)
+		beq.s	@type0				; branch if subtype = 0
+		move.b	d0,ost_routine(a0)		; copy subtype to routine (4 = Bom_Fuse; 6 = Bom_Shrapnel)
 		rts	
 ; ===========================================================================
 
@@ -68,15 +68,15 @@ Bom_Action_Index:
 
 Bom_Action_Walk:
 		bsr.w	Bom_ChkDist
-		subq.w	#1,ost_bomb_fuse_time(a0)		; subtract 1 from time delay
-		bpl.s	@noflip					; if time remains, branch
-		addq.b	#2,ost_routine2(a0)			; goto Bom_Action_Wait next
-		move.w	#1535,ost_bomb_fuse_time(a0)		; set time delay to 25.5 seconds
+		subq.w	#1,ost_bomb_fuse_time(a0)	; subtract 1 from time delay
+		bpl.s	@noflip				; if time remains, branch
+		addq.b	#2,ost_routine2(a0)		; goto Bom_Action_Wait next
+		move.w	#1535,ost_bomb_fuse_time(a0)	; set time delay to 25.5 seconds
 		move.w	#$10,ost_x_vel(a0)
-		move.b	#id_ani_bomb_walk,ost_anim(a0)		; use walking animation
+		move.b	#id_ani_bomb_walk,ost_anim(a0)	; use walking animation
 		bchg	#status_xflip_bit,ost_status(a0)
 		beq.s	@noflip
-		neg.w	ost_x_vel(a0)				; change direction
+		neg.w	ost_x_vel(a0)			; change direction
 
 	@noflip:
 		rts	
@@ -84,23 +84,23 @@ Bom_Action_Walk:
 
 Bom_Action_Wait:
 		bsr.w	Bom_ChkDist
-		subq.w	#1,ost_bomb_fuse_time(a0)		; subtract 1 from time delay
-		bmi.s	@stopwalking				; if time expires, branch
+		subq.w	#1,ost_bomb_fuse_time(a0)	; subtract 1 from time delay
+		bmi.s	@stopwalking			; if time expires, branch
 		bsr.w	SpeedToPos
 		rts
 
 	@stopwalking:
-		subq.b	#2,ost_routine2(a0)			; goto Bom_Action_Walk next
-		move.w	#179,ost_bomb_fuse_time(a0)		; set time delay to 3 seconds
-		clr.w	ost_x_vel(a0)				; stop walking
-		move.b	#id_ani_bomb_stand,ost_anim(a0)		; use waiting animation
+		subq.b	#2,ost_routine2(a0)		; goto Bom_Action_Walk next
+		move.w	#179,ost_bomb_fuse_time(a0)	; set time delay to 3 seconds
+		clr.w	ost_x_vel(a0)			; stop walking
+		move.b	#id_ani_bomb_stand,ost_anim(a0)	; use waiting animation
 		rts	
 ; ===========================================================================
 
 Bom_Action_Explode:
-		subq.w	#1,ost_bomb_fuse_time(a0)		; subtract 1 from time delay
-		bpl.s	@noexplode				; if time remains, branch
-		move.b	#id_ExplosionBomb,ost_id(a0)		; change bomb into an explosion
+		subq.w	#1,ost_bomb_fuse_time(a0)	; subtract 1 from time delay
+		bpl.s	@noexplode			; if time remains, branch
+		move.b	#id_ExplosionBomb,ost_id(a0)	; change bomb into an explosion
 		move.b	#id_ExBom_Main,ost_routine(a0)
 
 	@noexplode:
@@ -117,8 +117,8 @@ Bom_ChkDist:
 		neg.w	d0
 
 	@isleft:
-		cmpi.w	#$60,d0					; is Sonic within $60 pixels?
-		bcc.s	@outofrange				; if not, branch
+		cmpi.w	#$60,d0				; is Sonic within $60 pixels?
+		bcc.s	@outofrange			; if not, branch
 		move.w	(v_ost_player+ost_y_pos).w,d0
 		sub.w	ost_y_pos(a0),d0
 		bcc.s	@isabove
@@ -129,16 +129,16 @@ Bom_ChkDist:
 		bcc.s	@outofrange
 
 		move.b	#id_Bom_Action_Explode,ost_routine2(a0)
-		move.w	#143,ost_bomb_fuse_time(a0)		; set fuse time
+		move.w	#143,ost_bomb_fuse_time(a0)	; set fuse time
 		clr.w	ost_x_vel(a0)
-		move.b	#id_ani_bomb_active,ost_anim(a0)	; use activated animation
+		move.b	#id_ani_bomb_active,ost_anim(a0) ; use activated animation
 		bsr.w	FindNextFreeObj
 		bne.s	@outofrange
 		lea	Bom_Settings2(pc),a2
 		bsr.w	SetupChild
-		btst	#status_yflip_bit,ost_status(a0)	; is bomb upside-down?
-		beq.s	@normal					; if not, branch
-		neg.w	ost_y_vel(a1)				; reverse direction for fuse
+		btst	#status_yflip_bit,ost_status(a0) ; is bomb upside-down?
+		beq.s	@normal				; if not, branch
+		neg.w	ost_y_vel(a1)			; reverse direction for fuse
 
 	@normal:
 
@@ -167,9 +167,9 @@ Bom_Fuse:	; Routine 4
 ; ===========================================================================
 
 Bom_Fuse_ChkTime:
-		subq.w	#1,ost_bomb_fuse_time(a0)		; decrement fuse timer
-		bmi.s	@explode				; branch if fuse runs out
-		bsr.w	SpeedToPos				; update position
+		subq.w	#1,ost_bomb_fuse_time(a0)	; decrement fuse timer
+		bmi.s	@explode			; branch if fuse runs out
+		bsr.w	SpeedToPos			; update position
 		rts	
 ; ===========================================================================
 
@@ -177,9 +177,9 @@ Bom_Fuse_ChkTime:
 		clr.w	ost_bomb_fuse_time(a0)
 		clr.b	ost_routine(a0)
 		move.w	ost_bomb_y_start(a0),ost_y_pos(a0)
-		moveq	#4-1,d3					; 4 shrapnel objects
-		movea.l	a0,a1					; replace fuse object with 1st shrapnel object
-		lea	(Bom_ShrSpeed).l,a3			; load shrapnel speed data
+		moveq	#4-1,d3				; 4 shrapnel objects
+		movea.l	a0,a1				; replace fuse object with 1st shrapnel object
+		lea	(Bom_ShrSpeed).l,a3		; load shrapnel speed data
 		bra.s	@makeshrapnel
 ; ===========================================================================
 
@@ -195,23 +195,23 @@ Bom_Fuse_ChkTime:
 		bset	#render_onscreen_bit,ost_render(a1)
 
 	@fail:
-		dbf	d3,@loop				; repeat 3 more	times
+		dbf	d3,@loop			; repeat 3 more	times
 
 		move.b	#id_Bom_Shrapnel,ost_routine(a0)
 
 Bom_Shrapnel:	; Routine 6
-		bsr.w	SpeedToPos				; update position
-		addi.w	#$18,ost_y_vel(a0)			; apply gravity
+		bsr.w	SpeedToPos			; update position
+		addi.w	#$18,ost_y_vel(a0)		; apply gravity
 		lea	(Ani_Bomb).l,a1
 		bsr.w	AnimateSprite
-		tst.b	ost_render(a0)				; is object on-screen?
-		bpl.w	DeleteObject				; if not, branch
+		tst.b	ost_render(a0)			; is object on-screen?
+		bpl.w	DeleteObject			; if not, branch
 		bra.w	DisplaySprite
 ; ===========================================================================
-Bom_ShrSpeed:	dc.w -$200, -$300				; top left
-		dc.w -$100, -$200				; bottom left
-		dc.w $200, -$300				; top right
-		dc.w $100, -$200				; bottom right
+Bom_ShrSpeed:	dc.w -$200, -$300			; top left
+		dc.w -$100, -$200			; bottom left
+		dc.w $200, -$300			; top right
+		dc.w $100, -$200			; bottom right
 
 Bom_Settings3:	dc.b ost_id,id_Bomb
 		dc.b ost_subtype,id_Bom_Shrapnel

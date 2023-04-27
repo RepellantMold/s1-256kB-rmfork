@@ -5,19 +5,19 @@
 ; ---------------------------------------------------------------------------
 
 LevelParameterLoad:
-		clr.b	(v_dle_routine).w			; clear DynamicLevelEvents routine counter
-		move.w	(v_zone).w,d0				; get zone/act number
-		lsl.b	#6,d0					; move act number next to zone number
-		lsr.w	#3,d0					; move both into low byte
-		lea	LevelBoundaryList(pc,d0.w),a0		; load level boundaries
+		clr.b	(v_dle_routine).w		; clear DynamicLevelEvents routine counter
+		move.w	(v_zone).w,d0			; get zone/act number
+		lsl.b	#6,d0				; move act number next to zone number
+		lsr.w	#3,d0				; move both into low byte
+		lea	LevelBoundaryList(pc,d0.w),a0	; load level boundaries
 		move.l	(a0)+,d0
-		move.l	d0,(v_boundary_left).w			; load left & right boundaries (2 bytes each)
+		move.l	d0,(v_boundary_left).w		; load left & right boundaries (2 bytes each)
 		move.l	d0,(v_boundary_left_next).w
 		move.l	(a0)+,d0
-		move.l	d0,(v_boundary_top).w			; load top & bottom boundaries (2 bytes each)
+		move.l	d0,(v_boundary_top).w		; load top & bottom boundaries (2 bytes each)
 		move.l	d0,(v_boundary_top_next).w
-		move.w	#$1010,(v_fg_x_redraw_flag).w		; set fg redraw flag
-		move.w	#$60,(v_camera_y_shift).w		; default camera shift = $60 (changes when Sonic looks up/down)
+		move.w	#$1010,(v_fg_x_redraw_flag).w	; set fg redraw flag
+		move.w	#$60,(v_camera_y_shift).w	; default camera shift = $60 (changes when Sonic looks up/down)
 		bra.w	LPL_StartPos
 
 ; ---------------------------------------------------------------------------
@@ -68,74 +68,74 @@ LevelBoundaryList:
 ; ---------------------------------------------------------------------------
 
 EndingStartPosList:
-		dc.l startpos_ghz1_end1				; GHZ act 1
-		dc.l startpos_mz2_end				; MZ act 2
-		dc.l startpos_syz3_end				; SYZ act 3
-		dc.l startpos_lz3_end				; LZ act 3
-		dc.l startpos_slz3_end				; SLZ act 3
-		dc.l startpos_sbz1_end				; SBZ act 1
-		dc.l startpos_sbz2_end				; SBZ act 2
-		dc.l startpos_ghz1_end2				; GHZ act 1
+		dc.l startpos_ghz1_end1			; GHZ act 1
+		dc.l startpos_mz2_end			; MZ act 2
+		dc.l startpos_syz3_end			; SYZ act 3
+		dc.l startpos_lz3_end			; LZ act 3
+		dc.l startpos_slz3_end			; SLZ act 3
+		dc.l startpos_sbz1_end			; SBZ act 1
+		dc.l startpos_sbz2_end			; SBZ act 2
+		dc.l startpos_ghz1_end2			; GHZ act 1
 		even
 
 ; ===========================================================================
 
 LPL_StartPos:
-		tst.b	(v_last_lamppost).w			; have any lampposts been hit?
-		beq.s	@no_lamppost				; if not, branch
+		tst.b	(v_last_lamppost).w		; have any lampposts been hit?
+		beq.s	@no_lamppost			; if not, branch
 
-		jsr	(Lamp_LoadInfo).l			; load lamppost variables
+		jsr	(Lamp_LoadInfo).l		; load lamppost variables
 		move.w	(v_ost_player+ost_x_pos).w,d1
-		move.w	(v_ost_player+ost_y_pos).w,d0		; d0/d1 = Sonic's position from lamppost variables
+		move.w	(v_ost_player+ost_y_pos).w,d0	; d0/d1 = Sonic's position from lamppost variables
 		bra.s	LPL_Camera
 ; ===========================================================================
 
 @no_lamppost:
-		move.w	(v_zone).w,d0				; get zone/act number
+		move.w	(v_zone).w,d0			; get zone/act number
 		lsl.b	#6,d0
-		lsr.w	#4,d0					; convert to 1-byte id, multiplied by 4
-		lea	StartPosList(pc,d0.w),a1		; load Sonic's start position
-		tst.w	(v_demo_mode).w				; is ending demo mode on?
-		bpl.s	@no_ending_demo				; if not, branch
+		lsr.w	#4,d0				; convert to 1-byte id, multiplied by 4
+		lea	StartPosList(pc,d0.w),a1	; load Sonic's start position
+		tst.w	(v_demo_mode).w			; is ending demo mode on?
+		bpl.s	@no_ending_demo			; if not, branch
 
 		move.w	(v_credits_num).w,d0
 		subq.w	#1,d0
 		lsl.w	#2,d0
-		lea	EndingStartPosList(pc,d0.w),a1		; load Sonic's start position
+		lea	EndingStartPosList(pc,d0.w),a1	; load Sonic's start position
 
 	@no_ending_demo:
 		moveq	#0,d1
 		move.w	(a1)+,d1
-		move.w	d1,(v_ost_player+ost_x_pos).w		; set Sonic's x position
+		move.w	d1,(v_ost_player+ost_x_pos).w	; set Sonic's x position
 		moveq	#0,d0
 		move.w	(a1),d0
-		move.w	d0,(v_ost_player+ost_y_pos).w		; set Sonic's y position
+		move.w	d0,(v_ost_player+ost_y_pos).w	; set Sonic's y position
 
 LPL_Camera:
-		subi.w	#160,d1					; is Sonic more than 160px from left edge?
-		bcc.s	@chk_right				; if yes, branch
+		subi.w	#160,d1				; is Sonic more than 160px from left edge?
+		bcc.s	@chk_right			; if yes, branch
 		moveq	#0,d1
 
 	@chk_right:
 		move.w	(v_boundary_right).w,d2
-		cmp.w	d2,d1					; is Sonic inside the right edge?
-		bcs.s	@set_camera_x				; if yes, branch
+		cmp.w	d2,d1				; is Sonic inside the right edge?
+		bcs.s	@set_camera_x			; if yes, branch
 		move.w	d2,d1
 
 	@set_camera_x:
-		move.w	d1,(v_camera_x_pos).w			; set camera x position
+		move.w	d1,(v_camera_x_pos).w		; set camera x position
 
-		subi.w	#96,d0					; is Sonic within 96px of upper edge?
-		bcc.s	@chk_bottom				; if yes, branch
+		subi.w	#96,d0				; is Sonic within 96px of upper edge?
+		bcc.s	@chk_bottom			; if yes, branch
 		moveq	#0,d0
 
 	@chk_bottom:
-		cmp.w	(v_boundary_bottom).w,d0		; is Sonic above the bottom edge?
-		blt.s	@set_camera_y				; if yes, branch
+		cmp.w	(v_boundary_bottom).w,d0	; is Sonic above the bottom edge?
+		blt.s	@set_camera_y			; if yes, branch
 		move.w	(v_boundary_bottom).w,d0
 
 	@set_camera_y:
-		move.w	d0,(v_camera_y_pos).w			; set vertical screen position
+		move.w	d0,(v_camera_y_pos).w		; set vertical screen position
 		bsr.w	LPL_InitBG
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
@@ -181,8 +181,8 @@ StartPosList:
 
 		zonewarning StartPosList,$10
 
-		dc.l startpos_ending1				; Ending (extra flowers)
-		dc.l startpos_ending2				; Ending
+		dc.l startpos_ending1			; Ending (extra flowers)
+		dc.l startpos_ending2			; Ending
 		dc.l startpos_unused
 		dc.l startpos_unused
 		even
@@ -193,14 +193,14 @@ StartPosList:
 
 LoopTunnelList:
 		;	loop	loop	tunnel	tunnel
-		dc.b	$B5,	$7F,	$1F,	$20		; Green Hill
-		dc.b	$7F,	$7F,	$7F,	$7F		; Labyrinth
-		dc.b	$7F,	$7F,	$7F,	$7F		; Marble
-		dc.b	$AA,	$B4,	$7F,	$7F		; Star Light
-		dc.b	$7F,	$7F,	$7F,	$7F		; Spring Yard
-		dc.b	$7F,	$7F,	$7F,	$7F		; Scrap Brain
+		dc.b	$B5,	$7F,	$1F,	$20	; Green Hill
+		dc.b	$7F,	$7F,	$7F,	$7F	; Labyrinth
+		dc.b	$7F,	$7F,	$7F,	$7F	; Marble
+		dc.b	$AA,	$B4,	$7F,	$7F	; Star Light
+		dc.b	$7F,	$7F,	$7F,	$7F	; Spring Yard
+		dc.b	$7F,	$7F,	$7F,	$7F	; Scrap Brain
 		zonewarning LoopTunnelList,4
-		dc.b	$7F,	$7F,	$7F,	$7F		; Ending (Green Hill)
+		dc.b	$7F,	$7F,	$7F,	$7F	; Ending (Green Hill)
 		even
 
 ; ---------------------------------------------------------------------------
@@ -214,13 +214,13 @@ LoopTunnelList:
 ; ---------------------------------------------------------------------------
 
 LPL_InitBG:
-		tst.b	(v_last_lamppost).w			; have any lampposts been hit?
-		bne.s	@no_lamppost				; if yes, branch
+		tst.b	(v_last_lamppost).w		; have any lampposts been hit?
+		bne.s	@no_lamppost			; if yes, branch
 		move.w	d0,(v_bg1_y_pos).w
 		move.w	d0,(v_bg2_y_pos).w
 		move.w	d1,(v_bg1_x_pos).w
 		move.w	d1,(v_bg2_x_pos).w
-		move.w	d1,(v_bg3_x_pos).w			; use same x/y pos for fg and bg
+		move.w	d1,(v_bg3_x_pos).w		; use same x/y pos for fg and bg
 
 	@no_lamppost:
 		moveq	#0,d2
@@ -255,7 +255,7 @@ LPL_InitBG_GHZ:
 ; ===========================================================================
 
 LPL_InitBG_LZ:
-		asr.l	#1,d0					; d0 = v_camera_y_pos/2
+		asr.l	#1,d0				; d0 = v_camera_y_pos/2
 		move.w	d0,(v_bg1_y_pos).w
 		rts	
 ; ===========================================================================
@@ -266,7 +266,7 @@ LPL_InitBG_MZ:
 
 LPL_InitBG_SLZ:
 		asr.l	#1,d0
-		addi.w	#$C0,d0					; d0 = (v_camera_y_pos/2)+$C0
+		addi.w	#$C0,d0				; d0 = (v_camera_y_pos/2)+$C0
 		move.w	d0,(v_bg1_y_pos).w
 		clr.l	(v_bg1_x_pos).w
 		rts	
@@ -277,7 +277,7 @@ LPL_InitBG_SYZ:
 		move.l	d0,d2
 		asl.l	#1,d0
 		add.l	d2,d0
-		asr.l	#8,d0					; d0 = v_camera_y_pos/5 (approx)
+		asr.l	#8,d0				; d0 = v_camera_y_pos/5 (approx)
 		addq.w	#1,d0
 		move.w	d0,(v_bg1_y_pos).w
 		clr.l	(v_bg1_x_pos).w

@@ -19,20 +19,20 @@ FBall_Index:	index *,,2
 		ptr FBall_Delete
 
 FBall_Speeds:	; Vertical - goes up and falls down
-		dc.w -$400					; x0
-		dc.w -$500					; x1
-		dc.w -$600					; x2
+		dc.w -$400				; x0
+		dc.w -$500				; x1
+		dc.w -$600				; x2
 
 		; Vertical - constant speed
-		dc.w $200					; x5
+		dc.w $200				; x5
 
 		; Horizontal
-		dc.w -$200					; x6
-		dc.w $200					; x7
-		dc.w 0						; x8
+		dc.w -$200				; x6
+		dc.w $200				; x7
+		dc.w 0					; x8
 
-ost_fireball_mz_boss:	equ $29					; set to $FF if spawned by MZ boss
-ost_fireball_y_start:	equ $30					; original y position (2 bytes)
+ost_fireball_mz_boss:	equ $29				; set to $FF if spawned by MZ boss
+ost_fireball_y_start:	equ $30				; original y position (2 bytes)
 
 FBall_Settings:	dc.b ost_routine,2
 		dc.b ost_height,8
@@ -53,38 +53,38 @@ FBall_Settings:	dc.b ost_routine,2
 FBall_Main:	; Routine 0
 		lea	FBall_Settings(pc),a2
 		bsr.w	SetupObject
-		cmpi.b	#id_SLZ,(v_zone).w			; check if level is SLZ
-		bne.s	@notSLZ					; if not, branch
-		move.w	#0,ost_tile(a0)				; SLZ specific code
+		cmpi.b	#id_SLZ,(v_zone).w		; check if level is SLZ
+		bne.s	@notSLZ				; if not, branch
+		move.w	#0,ost_tile(a0)			; SLZ specific code
 
 	@notSLZ:
-		tst.b	ost_fireball_mz_boss(a0)		; was fireball spawned by MZ boss?
-		beq.s	@speed					; if not, branch
-		addq.b	#2,ost_priority(a0)			; use lower sprite priority
+		tst.b	ost_fireball_mz_boss(a0)	; was fireball spawned by MZ boss?
+		beq.s	@speed				; if not, branch
+		addq.b	#2,ost_priority(a0)		; use lower sprite priority
 
 	@speed:
 		moveq	#0,d0
 		move.b	ost_subtype(a0),d0
 		add.w	d0,d0
-		move.w	FBall_Speeds(pc,d0.w),ost_y_vel(a0)	; load object speed (vertical)
-		cmpi.b	#4,ost_subtype(a0)			; is object type 0-5?
-		bcs.s	@sound					; if yes, branch
+		move.w	FBall_Speeds(pc,d0.w),ost_y_vel(a0) ; load object speed (vertical)
+		cmpi.b	#4,ost_subtype(a0)		; is object type 0-5?
+		bcs.s	@sound				; if yes, branch
 
 		move.b	#$10,ost_actwidth(a0)
-		move.b	#id_ani_fire_horizontal,ost_anim(a0)	; use horizontal animation
-		move.w	ost_y_vel(a0),ost_x_vel(a0)		; set horizontal speed
-		move.w	#0,ost_y_vel(a0)			; delete vertical speed
+		move.b	#id_ani_fire_horizontal,ost_anim(a0) ; use horizontal animation
+		move.w	ost_y_vel(a0),ost_x_vel(a0)	; set horizontal speed
+		move.w	#0,ost_y_vel(a0)		; delete vertical speed
 
 	@sound:
-		play.w	1, jsr, sfx_FireBall			; play lava ball sound
+		play.w	1, jsr, sfx_FireBall		; play lava ball sound
 
 FBall_Action:	; Routine 2
 		moveq	#0,d0
 		move.b	ost_subtype(a0),d0
 		add.w	d0,d0
 		move.w	FBall_TypeIndex(pc,d0.w),d1
-		jsr	FBall_TypeIndex(pc,d1.w)		; update speed & check for wall collision
-		bsr.w	SpeedToPos				; update position
+		jsr	FBall_TypeIndex(pc,d1.w)	; update speed & check for wall collision
+		bsr.w	SpeedToPos			; update position
 		lea	(Ani_Fire).l,a1
 		bsr.w	AnimateSprite
 
@@ -104,17 +104,17 @@ FBall_TypeIndex:index *
 ; fireball types 00-03 fly up and fall back down
 
 FBall_Type_UpDown:
-		addi.w	#$18,ost_y_vel(a0)			; increase object's downward speed
+		addi.w	#$18,ost_y_vel(a0)		; increase object's downward speed
 		move.w	ost_fireball_y_start(a0),d0
-		cmp.w	ost_y_pos(a0),d0			; has object fallen back to its original position?
-		bcc.s	@keep_falling				; if not, branch
-		addq.b	#2,ost_routine(a0)			; goto FBall_Delete next
+		cmp.w	ost_y_pos(a0),d0		; has object fallen back to its original position?
+		bcc.s	@keep_falling			; if not, branch
+		addq.b	#2,ost_routine(a0)		; goto FBall_Delete next
 
 	@keep_falling:
 		bclr	#status_yflip_bit,ost_status(a0)
-		tst.w	ost_y_vel(a0)				; is fireball falling downwards?
-		bpl.s	@upwards				; if yes, branch
-		bset	#status_yflip_bit,ost_status(a0)	; set yflip
+		tst.w	ost_y_vel(a0)			; is fireball falling downwards?
+		bpl.s	@upwards			; if yes, branch
+		bset	#status_yflip_bit,ost_status(a0) ; set yflip
 
 	@upwards:
 		rts
@@ -124,11 +124,11 @@ FBall_Type_UpDown:
 FBall_Type_Down:
 		bclr	#status_yflip_bit,ost_status(a0)
 		bsr.w	FindFloorObj
-		tst.w	d1					; distance to floor
-		bpl.s	@no_floor				; branch if > 0
+		tst.w	d1				; distance to floor
+		bpl.s	@no_floor			; branch if > 0
 		move.b	#id_FBall_Type_Stop,ost_subtype(a0)
 		move.b	#id_ani_fire_vertcollide,ost_anim(a0)
-		move.w	#0,ost_y_vel(a0)			; stop the object when it touches the floor
+		move.w	#0,ost_y_vel(a0)		; stop the object when it touches the floor
 
 	@no_floor:
 		rts	
@@ -137,13 +137,13 @@ FBall_Type_Down:
 
 FBall_Type_Left:
 		bset	#status_xflip_bit,ost_status(a0)
-		moveq	#-8,d3					; dist. centre to left edge of fireball
+		moveq	#-8,d3				; dist. centre to left edge of fireball
 		bsr.w	FindWallLeftObj
-		tst.w	d1					; distance to wall
-		bpl.s	@no_wall				; branch if > 0
+		tst.w	d1				; distance to wall
+		bpl.s	@no_wall			; branch if > 0
 		move.b	#id_FBall_Type_Stop,ost_subtype(a0)
 		move.b	#id_ani_fire_horicollide,ost_anim(a0)
-		move.w	#0,ost_x_vel(a0)			; stop object when it touches a wall
+		move.w	#0,ost_x_vel(a0)		; stop object when it touches a wall
 
 	@no_wall:
 		rts	
@@ -151,13 +151,13 @@ FBall_Type_Left:
 
 FBall_Type_Right:
 		bclr	#status_xflip_bit,ost_status(a0)
-		moveq	#8,d3					; dist. centre to right edge of fireball
+		moveq	#8,d3				; dist. centre to right edge of fireball
 		bsr.w	FindWallRightObj
-		tst.w	d1					; distance to wall
-		bpl.s	@no_wall				; branch if > 0
+		tst.w	d1				; distance to wall
+		bpl.s	@no_wall			; branch if > 0
 		move.b	#id_FBall_Type_Stop,ost_subtype(a0)
 		move.b	#id_ani_fire_horicollide,ost_anim(a0)
-		move.w	#0,ost_x_vel(a0)			; stop object when it touches a wall
+		move.w	#0,ost_x_vel(a0)		; stop object when it touches a wall
 
 	@no_wall:
 FBall_Type_Stop:

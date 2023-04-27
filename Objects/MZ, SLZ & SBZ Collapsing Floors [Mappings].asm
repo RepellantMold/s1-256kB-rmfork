@@ -9,7 +9,7 @@ Map_CFlo:	index *
 		ptr frame_cfloor_slz_break
 		
 frame_cfloor_mz:
-		spritemap					; MZ and SBZ blocks
+		spritemap				; MZ and SBZ blocks
 		piece	-$20, -8, 4x2, 0
 		piece	-$20, 8, 4x2, 0
 		piece	0, -8, 4x2, 0
@@ -29,7 +29,7 @@ frame_cfloor_mz_break:
 		endsprite
 		
 frame_cfloor_slz:
-		spritemap					; SLZ blocks
+		spritemap				; SLZ blocks
 		piece	-$20, -8, 4x2, 0
 		piece	-$20, 8, 4x2, 8
 		piece	0, -8, 4x2, 0

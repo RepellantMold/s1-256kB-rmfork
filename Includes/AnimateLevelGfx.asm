@@ -7,8 +7,8 @@
 ; ---------------------------------------------------------------------------
 
 AnimateLevelGfx:
-		tst.w	(f_pause).w				; is the game paused?
-		bne.s	@ispaused				; if yes, branch
+		tst.w	(f_pause).w			; is the game paused?
+		bne.s	@ispaused			; if yes, branch
 		lea	(vdp_data_port).l,a6
 		moveq	#0,d0
 		move.b	(v_zone).w,d0
@@ -39,93 +39,93 @@ AniArt_GHZ:
 
 AniArt_Run:
 		lea	(v_levelani_0_frame).w,a2
-		move.w	(a3)+,d0				; get script count
+		move.w	(a3)+,d0			; get script count
 
 	@loop:
-		sub.w	#1,2(a2)				; decrement timer
+		sub.w	#1,2(a2)			; decrement timer
 		tst.w	2(a2)
-		bpl.s	@next					; branch if time remains
+		bpl.s	@next				; branch if time remains
 
 		moveq	#0,d1
-		movea.l	(a3),a1					; get gfx pointer
-		move.w	4(a3),d1				; get frame size
-		move.b	6(a3),d2				; get frame count
-		move.w	6(a3),2(a2)				; reset frame time
-		and.w	#$FF,2(a2)				; read only low byte
-		movea.l	8(a3),a4				; get sequence pointer
+		movea.l	(a3),a1				; get gfx pointer
+		move.w	4(a3),d1			; get frame size
+		move.b	6(a3),d2			; get frame count
+		move.w	6(a3),2(a2)			; reset frame time
+		and.w	#$FF,2(a2)			; read only low byte
+		movea.l	8(a3),a4			; get sequence pointer
 		moveq	#0,d3
-		move.b	(a2),d3					; get frame number
-		add.b	#1,(a2)					; next frame
+		move.b	(a2),d3				; get frame number
+		add.b	#1,(a2)				; next frame
 		cmp.b	(a2),d2
-		bne.s	@frame_ok				; branch if valid
-		move.b	#0,(a2)					; reset to 0
+		bne.s	@frame_ok			; branch if valid
+		move.b	#0,(a2)				; reset to 0
 	@frame_ok:
 		moveq	#0,d4
-		move.b	(a4,d3.w),d4				; get byte from sequence
+		move.b	(a4,d3.w),d4			; get byte from sequence
 		tst.b	d4
-		bpl.s	@not_long				; branch if long frame flag isn't set
-		bclr	#7,d4					; clear flag
-		move.w	-2(a4),2(a2)				; set time for long duration
+		bpl.s	@not_long			; branch if long frame flag isn't set
+		bclr	#7,d4				; clear flag
+		move.w	-2(a4),2(a2)			; set time for long duration
 	@not_long:
-		move.w	d1,d3					; copy frame size
-		lsr.w	#5,d1					; convert to tile count
+		move.w	d1,d3				; copy frame size
+		lsr.w	#5,d1				; convert to tile count
 		sub.w	#1,d1
-		mulu.w	d4,d3					; jump to position within gfx
-		adda.w	d3,a1					; jump to actual gfx address
-		move.l	12(a3),4(a6)				; set target in VRAM
-		bsr.w	LoadTiles				; copy tiles to VRAM
+		mulu.w	d4,d3				; jump to position within gfx
+		adda.w	d3,a1				; jump to actual gfx address
+		move.l	12(a3),4(a6)			; set target in VRAM
+		bsr.w	LoadTiles			; copy tiles to VRAM
 		
 	@next:
-		lea	16(a3),a3				; jump to next script
-		lea	4(a2),a2				; next time/frame counter in RAM
-		dbf	d0,@loop				; repeat for all scripts
+		lea	16(a3),a3			; jump to next script
+		lea	4(a2),a2			; next time/frame counter in RAM
+		dbf	d0,@loop			; repeat for all scripts
 		rts
 
 AniArt_GHZ_Script:
-		dc.w 3-1					; script count
+		dc.w 3-1				; script count
 		
-		dc.l v_ghz_art					; gfx pointer
-		dc.w 8*sizeof_cell				; cells per frame
-		dc.b 2, 5					; frame count, time
-		dc.l Art_GhzWater_Seq				; sequence pointer
+		dc.l v_ghz_art				; gfx pointer
+		dc.w 8*sizeof_cell			; cells per frame
+		dc.b 2, 5				; frame count, time
+		dc.l Art_GhzWater_Seq			; sequence pointer
 		dc.l $40000000+(($6F00&$3FFF)<<16)+(($6F00&$C000)>>14) ; VRAM address
 		
-		dc.l v_ghz_art+$200				; gfx pointer
-		dc.w 16*sizeof_cell				; cells per frame
-		dc.b 2, 15					; frame count, time
-		dc.l Art_GhzWater_Seq				; sequence pointer
+		dc.l v_ghz_art+$200			; gfx pointer
+		dc.w 16*sizeof_cell			; cells per frame
+		dc.b 2, 15				; frame count, time
+		dc.l Art_GhzWater_Seq			; sequence pointer
 		dc.l $40000000+(($6B80&$3FFF)<<16)+(($6B80&$C000)>>14) ; VRAM address
 		
-		dc.l v_ghz_art+$200+$400			; gfx pointer
-		dc.w 12*sizeof_cell				; cells per frame
-		dc.b 4, 7					; frame count, time
-		dc.l Art_GhzFlower2_Seq				; sequence pointer
+		dc.l v_ghz_art+$200+$400		; gfx pointer
+		dc.w 12*sizeof_cell			; cells per frame
+		dc.b 4, 7				; frame count, time
+		dc.l Art_GhzFlower2_Seq			; sequence pointer
 		dc.l $40000000+(($6D80&$3FFF)<<16)+(($6D80&$C000)>>14) ; VRAM address
 
 Art_GhzWater_Seq:
 		dc.b 0, 1, 2, 3
 		
-		dc.w $7F					; time to use for longer frames
+		dc.w $7F				; time to use for longer frames
 Art_GhzFlower2_Seq:
-		dc.b $80, 1, $82, 1				; +$80 for longer frame
+		dc.b $80, 1, $82, 1			; +$80 for longer frame
 
 ; ---------------------------------------------------------------------------
 ; Animated pattern routine - Marble
 ; ---------------------------------------------------------------------------
 
 AniArt_MZ_Script:
-		dc.w 2-1					; script count
+		dc.w 2-1				; script count
 		
-		dc.l v_mz_art					; gfx pointer
-		dc.w 8*sizeof_cell				; cells per frame
-		dc.b 3, 19					; frame count, time
-		dc.l Art_GhzWater_Seq				; sequence pointer
+		dc.l v_mz_art				; gfx pointer
+		dc.w 8*sizeof_cell			; cells per frame
+		dc.b 3, 19				; frame count, time
+		dc.l Art_GhzWater_Seq			; sequence pointer
 		dc.l $40000000+(($5C40&$3FFF)<<16)+(($5C40&$C000)>>14) ; VRAM address
 		
-		dc.l v_mz_art+$300				; gfx pointer
-		dc.w 6*sizeof_cell				; cells per frame
-		dc.b 4, 7					; frame count, time
-		dc.l Art_GhzWater_Seq				; sequence pointer
+		dc.l v_mz_art+$300			; gfx pointer
+		dc.w 6*sizeof_cell			; cells per frame
+		dc.b 4, 7				; frame count, time
+		dc.l Art_GhzWater_Seq			; sequence pointer
 		dc.l $40000000+(($5D40&$3FFF)<<16)+(($5D40&$C000)>>14) ; VRAM address
 
 AniArt_MZ:
@@ -134,36 +134,36 @@ AniArt_MZ:
 
 AniArt_MZ_Magma:
 
-tilecount:	= 4						; 4 per column, 16 total
+tilecount:	= 4					; 4 per column, 16 total
 
-		subq.b	#1,(v_levelani_4_time).w		; decrement timer
-		bpl.s	@end					; branch if not -1
+		subq.b	#1,(v_levelani_4_time).w	; decrement timer
+		bpl.s	@end				; branch if not -1
 		
-		move.b	#1,(v_levelani_4_time).w		; time between each gfx change
+		move.b	#1,(v_levelani_4_time).w	; time between each gfx change
 		moveq	#0,d0
-		move.b	(v_levelani_0_frame).w,d0		; get surface lava frame number
-		lea	(v_mz_art+$300+$300).l,a4			; magma gfx
-		ror.w	#7,d0					; multiply frame num by $200
-		adda.w	d0,a4					; jump to appropriate tile
+		move.b	(v_levelani_0_frame).w,d0	; get surface lava frame number
+		lea	(v_mz_art+$300+$300).l,a4	; magma gfx
+		ror.w	#7,d0				; multiply frame num by $200
+		adda.w	d0,a4				; jump to appropriate tile
 		locVRAM	$5A40
 		moveq	#0,d3
 		move.b	(v_levelani_4_frame).w,d3
-		addq.b	#1,(v_levelani_4_frame).w		; increment frame counter (unused)
-		move.b	(v_oscillating_table+8).w,d3		; get oscillating value
-		move.w	#4-1,d2					; number of columns of tiles
+		addq.b	#1,(v_levelani_4_frame).w	; increment frame counter (unused)
+		move.b	(v_oscillating_table+8).w,d3	; get oscillating value
+		move.w	#4-1,d2				; number of columns of tiles
 
 	@loop:
 		move.w	d3,d0
 		add.w	d0,d0
-		andi.w	#$1E,d0					; d0 = low nybble of oscillating value * 2
+		andi.w	#$1E,d0				; d0 = low nybble of oscillating value * 2
 		lea	(AniArt_MZ_Magma_Index).l,a3
 		move.w	(a3,d0.w),d0
 		lea	(a3,d0.w),a3
-		movea.l	a4,a1					; a1 = magma gfx
-		move.w	#((tilecount*sizeof_cell)/4)-1,d1	; $1F
-		jsr	(a3)					; copy gfx to VRAM
-		addq.w	#4,d3					; increment initial oscillating value
-		dbf	d2,@loop				; repeat 3 times
+		movea.l	a4,a1				; a1 = magma gfx
+		move.w	#((tilecount*sizeof_cell)/4)-1,d1 ; $1F
+		jsr	(a3)				; copy gfx to VRAM
+		addq.w	#4,d3				; increment initial oscillating value
+		dbf	d2,@loop			; repeat 3 times
 	@end:
 AniArt_SBZ_none:
 		rts
@@ -173,18 +173,18 @@ AniArt_SBZ_none:
 ; ---------------------------------------------------------------------------
 
 AniArt_SBZ_Script:
-		dc.w 2-1					; script count
+		dc.w 2-1				; script count
 		
-		dc.l v_sbz_art					; gfx pointer
-		dc.w 12*sizeof_cell				; cells per frame
-		dc.b 8, 7					; frame count, time
-		dc.l Art_SBZ_Seq				; sequence pointer
+		dc.l v_sbz_art				; gfx pointer
+		dc.w 12*sizeof_cell			; cells per frame
+		dc.b 8, 7				; frame count, time
+		dc.l Art_SBZ_Seq			; sequence pointer
 		dc.l $40000000+(($9E00&$3FFF)<<16)+(($9E00&$C000)>>14) ; VRAM address
 		
-		dc.l v_sbz_art					; gfx pointer
-		dc.w 12*sizeof_cell				; cells per frame
-		dc.b 8, 7					; frame count, time
-		dc.l Art_SBZ_Seq2				; sequence pointer
+		dc.l v_sbz_art				; gfx pointer
+		dc.w 12*sizeof_cell			; cells per frame
+		dc.b 8, 7				; frame count, time
+		dc.l Art_SBZ_Seq2			; sequence pointer
 		dc.l $40000000+(($9F80&$3FFF)<<16)+(($9F80&$C000)>>14) ; VRAM address
 
 		dc.w 180
@@ -203,36 +203,36 @@ AniArt_SBZ:
 ; ---------------------------------------------------------------------------
 
 AniArt_End_Script:
-		dc.w 5-1					; script count
+		dc.w 5-1				; script count
 		
-		dc.l v_ghz_art+$200				; gfx pointer
-		dc.w 16*sizeof_cell				; cells per frame
-		dc.b 2, 7					; frame count, time
-		dc.l Art_GhzWater_Seq				; sequence pointer
+		dc.l v_ghz_art+$200			; gfx pointer
+		dc.w 16*sizeof_cell			; cells per frame
+		dc.b 2, 7				; frame count, time
+		dc.l Art_GhzWater_Seq			; sequence pointer
 		dc.l $40000000+(($6B80&$3FFF)<<16)+(($6B80&$C000)>>14) ; VRAM address
 		
-		dc.l v_ghz_flower_buffer			; gfx pointer
-		dc.w 16*sizeof_cell				; cells per frame
-		dc.b 2, 7					; frame count, time
-		dc.l Art_GhzWater_Seq				; sequence pointer
+		dc.l v_ghz_flower_buffer		; gfx pointer
+		dc.w 16*sizeof_cell			; cells per frame
+		dc.b 2, 7				; frame count, time
+		dc.l Art_GhzWater_Seq			; sequence pointer
 		dc.l $40000000+(($7200&$3FFF)<<16)+(($7200&$C000)>>14) ; VRAM address
 		
-		dc.l v_ghz_art+$200+$400			; gfx pointer
-		dc.w 12*sizeof_cell				; cells per frame
-		dc.b 8, 7					; frame count, time
-		dc.l Art_EndFlower_Seq				; sequence pointer
+		dc.l v_ghz_art+$200+$400		; gfx pointer
+		dc.w 12*sizeof_cell			; cells per frame
+		dc.b 8, 7				; frame count, time
+		dc.l Art_EndFlower_Seq			; sequence pointer
 		dc.l $40000000+(($6D80&$3FFF)<<16)+(($6D80&$C000)>>14) ; VRAM address
 
-		dc.l v_ghz_flower_buffer+$400			; gfx pointer
-		dc.w 16*sizeof_cell				; cells per frame
-		dc.b 4, 14					; frame count, time
-		dc.l Art_EndFlower_Seq2				; sequence pointer
+		dc.l v_ghz_flower_buffer+$400		; gfx pointer
+		dc.w 16*sizeof_cell			; cells per frame
+		dc.b 4, 14				; frame count, time
+		dc.l Art_EndFlower_Seq2			; sequence pointer
 		dc.l $40000000+(($7000&$3FFF)<<16)+(($7000&$C000)>>14) ; VRAM address
 
-		dc.l v_ghz_flower_buffer+$A00			; gfx pointer
-		dc.w 16*sizeof_cell				; cells per frame
-		dc.b 4, 11					; frame count, time
-		dc.l Art_EndFlower_Seq2				; sequence pointer
+		dc.l v_ghz_flower_buffer+$A00		; gfx pointer
+		dc.w 16*sizeof_cell			; cells per frame
+		dc.b 4, 11				; frame count, time
+		dc.l Art_EndFlower_Seq2			; sequence pointer
 		dc.l $40000000+(($6800&$3FFF)<<16)+(($6800&$C000)>>14) ; VRAM address
 
 Art_EndFlower_Seq:
@@ -255,7 +255,7 @@ AniArt_Ending:
 
 LoadTiles:
 		rept sizeof_cell/4
-		move.l	(a1)+,(a6)				; copy 1 tile to VRAM
+		move.l	(a1)+,(a6)			; copy 1 tile to VRAM
 		endr
 		dbf	d1,LoadTiles
 AniArt_none:
@@ -293,9 +293,9 @@ AniArt_MZ_Magma_Index:
 ; ===========================================================================
 
 AniArt_MZ_Magma_Shift0_Col0:
-		move.l	(a1),(a6)				; write 8px row to VRAM
-		lea	$10(a1),a1				; read next 32px row from source
-		dbf	d1,AniArt_MZ_Magma_Shift0_Col0		; repeat for column of 4 tiles
+		move.l	(a1),(a6)			; write 8px row to VRAM
+		lea	$10(a1),a1			; read next 32px row from source
+		dbf	d1,AniArt_MZ_Magma_Shift0_Col0	; repeat for column of 4 tiles
 		rts	
 ; ===========================================================================
 

@@ -16,7 +16,7 @@ Harp_Index:	index *,,2
 		ptr Harp_Move
 		ptr Harp_Wait
 
-ost_harp_time:	equ $30						; time between stabbing/retracting (2 bytes)
+ost_harp_time:	equ $30					; time between stabbing/retracting (2 bytes)
 
 Harp_Settings:	dc.b ost_routine,2
 		dc.b so_write_long,ost_mappings
@@ -38,27 +38,27 @@ Harp_Main:	; Routine 0
 
 Harp_Move:	; Routine 2
 		lea	(Ani_Harp).l,a1
-		bsr.w	AnimateSprite				; animate and goto Harp_Wait next
+		bsr.w	AnimateSprite			; animate and goto Harp_Wait next
 		moveq	#0,d0
-		move.b	ost_frame(a0),d0			; get frame number
-		move.b	Harp_types(pc,d0.w),ost_col_type(a0)	; get collision type
+		move.b	ost_frame(a0),d0		; get frame number
+		move.b	Harp_types(pc,d0.w),ost_col_type(a0) ; get collision type
 		bra.s	Harp_Despawn
 
 	Harp_types:
-		dc.b id_col_8x4+id_col_hurt			; horizontal, short
-		dc.b id_col_24x4+id_col_hurt			; horizontal, middle
-		dc.b id_col_40x4+id_col_hurt			; horizontal, extended
-		dc.b id_col_4x8+id_col_hurt			; vertical, short
-		dc.b id_col_4x24+id_col_hurt			; vertical, middle
-		dc.b id_col_4x40+id_col_hurt			; vertical, extended
+		dc.b id_col_8x4+id_col_hurt		; horizontal, short
+		dc.b id_col_24x4+id_col_hurt		; horizontal, middle
+		dc.b id_col_40x4+id_col_hurt		; horizontal, extended
+		dc.b id_col_4x8+id_col_hurt		; vertical, short
+		dc.b id_col_4x24+id_col_hurt		; vertical, middle
+		dc.b id_col_4x40+id_col_hurt		; vertical, extended
 		even
 
 Harp_Wait:	; Routine 4
-		subq.w	#1,ost_harp_time(a0)			; decrement timer
-		bpl.s	@chkdel					; branch if time remains
-		move.w	#60,ost_harp_time(a0)			; reset timer
-		subq.b	#2,ost_routine(a0)			; goto Harp_Move next
-		bchg	#0,ost_anim(a0)				; reverse animation
+		subq.w	#1,ost_harp_time(a0)		; decrement timer
+		bpl.s	@chkdel				; branch if time remains
+		move.w	#60,ost_harp_time(a0)		; reset timer
+		subq.b	#2,ost_routine(a0)		; goto Harp_Move next
+		bchg	#0,ost_anim(a0)			; reverse animation
 
 	@chkdel:
 Harp_Despawn:

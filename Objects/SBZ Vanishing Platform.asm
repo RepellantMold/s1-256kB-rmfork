@@ -17,10 +17,10 @@ VanP_Index:	index *,,2
 		ptr VanP_StoodOn
 		ptr VanP_Sync
 
-ost_vanish_wait_time:	equ $30					; time until change (2 bytes)
-ost_vanish_wait_master:	equ $32					; time between changes (2 bytes)
-ost_vanish_sync_sub:	equ $36					; value to subtract from framecount for synchronising (2 bytes)
-ost_vanish_sync_mask:	equ $38					; bitmask for synchronising (2 bytes)
+ost_vanish_wait_time:	equ $30				; time until change (2 bytes)
+ost_vanish_wait_master:	equ $32				; time between changes (2 bytes)
+ost_vanish_sync_sub:	equ $36				; value to subtract from framecount for synchronising (2 bytes)
+ost_vanish_sync_mask:	equ $38				; bitmask for synchronising (2 bytes)
 
 VanP_Settings:	dc.b ost_routine,6
 		dc.b so_write_long,ost_mappings
@@ -38,30 +38,30 @@ VanP_Main:	; Routine 0
 		lea	VanP_Settings(pc),a2
 		bsr.w	SetupObject
 		moveq	#0,d0
-		move.b	ost_subtype(a0),d0			; get object type
-		andi.w	#$F,d0					; read only low nybble
-		addq.w	#1,d0					; add 1
-		lsl.w	#7,d0					; multiply by $80
-		move.w	d0,d1					; copy to d1
+		move.b	ost_subtype(a0),d0		; get object type
+		andi.w	#$F,d0				; read only low nybble
+		addq.w	#1,d0				; add 1
+		lsl.w	#7,d0				; multiply by $80
+		move.w	d0,d1				; copy to d1
 		subq.w	#1,d0
 		move.w	d0,ost_vanish_wait_time(a0)
-		move.w	d0,ost_vanish_wait_master(a0)		; set as time between changes
+		move.w	d0,ost_vanish_wait_master(a0)	; set as time between changes
 		moveq	#0,d0
-		move.b	ost_subtype(a0),d0			; get object type
-		andi.w	#$F0,d0					; read only high nybble
+		move.b	ost_subtype(a0),d0		; get object type
+		andi.w	#$F0,d0				; read only high nybble
 		addi.w	#$80,d1
 		mulu.w	d1,d0
 		lsr.l	#8,d0
 		move.w	d0,ost_vanish_sync_sub(a0)
-		subq.w	#1,d1					; d1 = $FF if type $x0; $3FF if type $x6
+		subq.w	#1,d1				; d1 = $FF if type $x0; $3FF if type $x6
 		move.w	d1,ost_vanish_sync_mask(a0)
 
 VanP_Sync:	; Routine 6
-		move.w	(v_frame_counter).w,d0			; get word that increments every frame
+		move.w	(v_frame_counter).w,d0		; get word that increments every frame
 		sub.w	ost_vanish_sync_sub(a0),d0
-		and.w	ost_vanish_sync_mask(a0),d0		; apply bitmask
-		bne.s	@animate				; branch if any bits are set
-		subq.b	#4,ost_routine(a0)			; goto VanP_Detect next (every $100 or $400 frames)
+		and.w	ost_vanish_sync_mask(a0),d0	; apply bitmask
+		bne.s	@animate			; branch if any bits are set
+		subq.b	#4,ost_routine(a0)		; goto VanP_Detect next (every $100 or $400 frames)
 		bra.s	VanP_Detect
 ; ===========================================================================
 
@@ -73,44 +73,44 @@ VanP_Sync:	; Routine 6
 
 VanP_Detect:	; Routine 2
 VanP_StoodOn:	; Routine 4
-		subq.w	#1,ost_vanish_wait_time(a0)		; decrement timer
-		bpl.s	@wait					; branch if time remains
-		move.w	#127,ost_vanish_wait_time(a0)		; reset timer to 2 seconds
-		tst.b	ost_anim(a0)				; is platform vanishing?
-		beq.s	@isvanishing				; if yes, branch
+		subq.w	#1,ost_vanish_wait_time(a0)	; decrement timer
+		bpl.s	@wait				; branch if time remains
+		move.w	#127,ost_vanish_wait_time(a0)	; reset timer to 2 seconds
+		tst.b	ost_anim(a0)			; is platform vanishing?
+		beq.s	@isvanishing			; if yes, branch
 		move.w	ost_vanish_wait_master(a0),ost_vanish_wait_time(a0) ; reset timer to $80 (type $x0) or $380 (type $x6)
 
 	@isvanishing:
-		bchg	#0,ost_anim(a0)				; switch between vanishing/appearing animations
+		bchg	#0,ost_anim(a0)			; switch between vanishing/appearing animations
 
 	@wait:
 		lea	(Ani_Van).l,a1
 		jsr	(AnimateSprite).l
-		btst	#1,ost_frame(a0)			; has platform vanished?
-		bne.s	@notsolid				; if yes, branch
-		cmpi.b	#id_VanP_Detect,ost_routine(a0)		; is platform being stood on?
-		bne.s	@stood_on				; if yes, branch
+		btst	#1,ost_frame(a0)		; has platform vanished?
+		bne.s	@notsolid			; if yes, branch
+		cmpi.b	#id_VanP_Detect,ost_routine(a0)	; is platform being stood on?
+		bne.s	@stood_on			; if yes, branch
 
 		moveq	#0,d1
 		move.b	ost_actwidth(a0),d1
-		jsr	(DetectPlatform).l			; detect collision and goto VanP_StoodOn next if true
+		jsr	(DetectPlatform).l		; detect collision and goto VanP_StoodOn next if true
 		bra.s	VanP_despawn
 ; ===========================================================================
 
 @stood_on:
 		moveq	#0,d1
 		move.b	ost_actwidth(a0),d1
-		jsr	(ExitPlatform).l			; goto VanP_Detect next if Sonic leaves platform
+		jsr	(ExitPlatform).l		; goto VanP_Detect next if Sonic leaves platform
 		move.w	ost_x_pos(a0),d2
 		jsr	(MoveWithPlatform2).l
 		bra.s	VanP_despawn
 ; ===========================================================================
 
 @notsolid:
-		btst	#status_platform_bit,ost_status(a0)	; is Sonic on the platform?
-		beq.s	VanP_despawn				; if not, branch
+		btst	#status_platform_bit,ost_status(a0) ; is Sonic on the platform?
+		beq.s	VanP_despawn			; if not, branch
 		lea	(v_ost_player).w,a1
-		bclr	#status_platform_bit,ost_status(a1)	; clear all platform flags
+		bclr	#status_platform_bit,ost_status(a1) ; clear all platform flags
 		bclr	#status_platform_bit,ost_status(a0)
 		move.b	#id_VanP_Detect,ost_routine(a0)
 		clr.b	ost_solid(a0)

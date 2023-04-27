@@ -5,26 +5,26 @@
 ; ---------------------------------------------------------------------------
 
 DeformLayers:
-		tst.b	(f_disable_scrolling).w			; is scrolling disabled?
-		beq.s	@bgscroll				; if not, branch
+		tst.b	(f_disable_scrolling).w		; is scrolling disabled?
+		beq.s	@bgscroll			; if not, branch
 		rts	
 ; ===========================================================================
 
 	@bgscroll:
-		clr.w	(v_fg_redraw_direction).w		; clear all redraw flags
+		clr.w	(v_fg_redraw_direction).w	; clear all redraw flags
 		clr.w	(v_bg1_redraw_direction).w
 		clr.w	(v_bg2_redraw_direction).w
 		clr.w	(v_bg3_redraw_direction).w
-		bsr.w	UpdateCamera_X				; update camera position & redraw flags
+		bsr.w	UpdateCamera_X			; update camera position & redraw flags
 		bsr.w	UpdateCamera_Y
-		bsr.w	DynamicLevelEvents			; update level boundaries, load bosses etc.
+		bsr.w	DynamicLevelEvents		; update level boundaries, load bosses etc.
 		move.w	(v_camera_y_pos).w,(v_fg_y_pos_vsram).w ; v_fg_y_pos_vsram is sent to VSRAM during VBlank
 		move.w	(v_bg1_y_pos).w,(v_bg_y_pos_vsram).w
 		moveq	#0,d0
-		move.b	(v_zone).w,d0				; get zone number
-		add.w	d0,d0					; multiply by 2
+		move.b	(v_zone).w,d0			; get zone number
+		add.w	d0,d0				; multiply by 2
 		move.w	Deform_Index(pc,d0.w),d0
-		jmp	Deform_Index(pc,d0.w)			; goto relevant deformation code
+		jmp	Deform_Index(pc,d0.w)		; goto relevant deformation code
 
 ; ---------------------------------------------------------------------------
 ; Offset index for background layer deformation	code
@@ -47,80 +47,80 @@ Deform_GHZ:
 ; REV01 - additional scrolling for clouds
 
 		; block 3 - distant mountains
-		move.w	(v_camera_x_diff).w,d4			; get camera x pos change since last frame
+		move.w	(v_camera_x_diff).w,d4		; get camera x pos change since last frame
 		ext.l	d4
 		asl.l	#5,d4
 		move.l	d4,d1
 		asl.l	#1,d4
-		add.l	d1,d4					; multiply by $60
+		add.l	d1,d4				; multiply by $60
 		moveq	#redraw_top_bit,d6
-		bsr.w	UpdateBG_X_Block3			; update bg x pos and set redraw flags
+		bsr.w	UpdateBG_X_Block3		; update bg x pos and set redraw flags
 
 		; block 2 - hills & waterfalls
-		move.w	(v_camera_x_diff).w,d4			; get camera x pos change since last frame
+		move.w	(v_camera_x_diff).w,d4		; get camera x pos change since last frame
 		ext.l	d4
-		asl.l	#7,d4					; multiply by $80
+		asl.l	#7,d4				; multiply by $80
 		moveq	#redraw_bg2_left_bit,d6
-		bsr.w	UpdateBG_X_Block2			; update bg x pos and set redraw flags
+		bsr.w	UpdateBG_X_Block2		; update bg x pos and set redraw flags
 
 		; calculate Y position
 		lea	(v_hscroll_buffer).w,a1
-		move.w	(v_camera_y_pos).w,d0			; get camera pos
-		andi.w	#$7FF,d0				; maximum $7FF
-		lsr.w	#5,d0					; divide by $20
+		move.w	(v_camera_y_pos).w,d0		; get camera pos
+		andi.w	#$7FF,d0			; maximum $7FF
+		lsr.w	#5,d0				; divide by $20
 		neg.w	d0
 		addi.w	#$20,d0
-		bpl.s	@limitY					; branch if v_camera_y_pos is between 0 and $400
-		moveq	#0,d0					; use 0 if greater
+		bpl.s	@limitY				; branch if v_camera_y_pos is between 0 and $400
+		moveq	#0,d0				; use 0 if greater
 	@limitY:
 		move.w	d0,d4
-		move.w	d0,(v_bg_y_pos_vsram).w			; update bg y pos
+		move.w	d0,(v_bg_y_pos_vsram).w		; update bg y pos
 		move.w	(v_camera_x_pos).w,d0
-		cmpi.b	#id_Title,(v_gamemode).w		; is this the title screen?
-		bne.s	@notTitle				; if not, branch
-		moveq	#0,d0					; reset camera position for title screen
+		cmpi.b	#id_Title,(v_gamemode).w	; is this the title screen?
+		bne.s	@notTitle			; if not, branch
+		moveq	#0,d0				; reset camera position for title screen
 	@notTitle:
 		neg.w	d0
 		swap	d0
 
 		; clouds
 		lea	(v_bgscroll_buffer).w,a2
-		addi.l	#$10000,(a2)+				; autoscroll upper cloud fastest
+		addi.l	#$10000,(a2)+			; autoscroll upper cloud fastest
 		addi.l	#$C000,(a2)+
 		addi.l	#$8000,(a2)+
 
-		move.w	(v_bgscroll_buffer).w,d0		; get autoscroll position of upper cloud
-		add.w	(v_bg3_x_pos).w,d0			; add current bg position
-		neg.w	d0					; reverse
+		move.w	(v_bgscroll_buffer).w,d0	; get autoscroll position of upper cloud
+		add.w	(v_bg3_x_pos).w,d0		; add current bg position
+		neg.w	d0				; reverse
 		move.w	#32-1,d1
 		sub.w	d4,d1
 		bcs.s	@gotoCloud2
-	@cloudLoop1:						; upper cloud (32px)
-		move.l	d0,(a1)+				; write to v_hscroll_buffer
+	@cloudLoop1:					; upper cloud (32px)
+		move.l	d0,(a1)+			; write to v_hscroll_buffer
 		dbf	d1,@cloudLoop1
 
 	@gotoCloud2:
-		move.w	(v_bgscroll_buffer+4).w,d0		; get autoscroll position of middle cloud
-		add.w	(v_bg3_x_pos).w,d0			; add current bg position
-		neg.w	d0					; reverse
+		move.w	(v_bgscroll_buffer+4).w,d0	; get autoscroll position of middle cloud
+		add.w	(v_bg3_x_pos).w,d0		; add current bg position
+		neg.w	d0				; reverse
 		move.w	#16-1,d1
-	@cloudLoop2:						; middle cloud (16px)
-		move.l	d0,(a1)+				; write to v_hscroll_buffer
+	@cloudLoop2:					; middle cloud (16px)
+		move.l	d0,(a1)+			; write to v_hscroll_buffer
 		dbf	d1,@cloudLoop2
 
-		move.w	(v_bgscroll_buffer+8).w,d0		; get autoscroll position of lower cloud
-		add.w	(v_bg3_x_pos).w,d0			; add current bg position
-		neg.w	d0					; reverse
+		move.w	(v_bgscroll_buffer+8).w,d0	; get autoscroll position of lower cloud
+		add.w	(v_bg3_x_pos).w,d0		; add current bg position
+		neg.w	d0				; reverse
 		move.w	#16-1,d1
-	@cloudLoop3:						; lower cloud (16px)
-		move.l	d0,(a1)+				; write to v_hscroll_buffer
+	@cloudLoop3:					; lower cloud (16px)
+		move.l	d0,(a1)+			; write to v_hscroll_buffer
 		dbf	d1,@cloudLoop3
 
 		; mountains
 		move.w	#48-1,d1
 		move.w	(v_bg3_x_pos).w,d0
 		neg.w	d0
-	@mountainLoop:						; distant mountains (48px)
+	@mountainLoop:					; distant mountains (48px)
 		move.l	d0,(a1)+
 		dbf	d1,@mountainLoop
 
@@ -128,7 +128,7 @@ Deform_GHZ:
 		move.w	#40-1,d1
 		move.w	(v_bg2_x_pos).w,d0
 		neg.w	d0
-	@hillLoop:						; hills & waterfalls (40px)
+	@hillLoop:					; hills & waterfalls (40px)
 		move.l	d0,(a1)+
 		dbf	d1,@hillLoop
 
@@ -225,12 +225,12 @@ Deform_LZ:
 		rts
 
 LZ_FG_Ripple_Data:
-		dc.b 1, 1, 2, 2, 3, 3, 3, 3, 2, 2, 1, 1		; 12 lines shifted to right
-		dcb.b 116, 0					; 116 lines normal
+		dc.b 1, 1, 2, 2, 3, 3, 3, 3, 2, 2, 1, 1	; 12 lines shifted to right
+		dcb.b 116, 0				; 116 lines normal
 		dc.b -1, -1, -2, -2, -3, -3, -3, -3, -2, -2, -1, -1 ; 12 lines shifted to left
-		dcb.b 20, 0					; 20 lines normal
-		dc.b 1, 1, 2, 2, 3, 3, 3, 3, 2, 2, 1, 1		; 12 lines shifted to right
-		dcb.b 84, 0					; 84 lines normal (total 256 lines)
+		dcb.b 20, 0				; 20 lines normal
+		dc.b 1, 1, 2, 2, 3, 3, 3, 3, 2, 2, 1, 1	; 12 lines shifted to right
+		dcb.b 84, 0				; 84 lines normal (total 256 lines)
 
 ; ---------------------------------------------------------------------------
 ; Marble Zone background layer deformation code
@@ -238,12 +238,12 @@ LZ_FG_Ripple_Data:
 
 Deform_MZ:
 		; block 1 - dungeon interior
-		move.w	(v_camera_x_diff).w,d4			; get camera x pos change since last frame
+		move.w	(v_camera_x_diff).w,d4		; get camera x pos change since last frame
 		ext.l	d4
 		asl.l	#6,d4
 		move.l	d4,d1
 		asl.l	#1,d4
-		add.l	d1,d4					; multiply by $C0
+		add.l	d1,d4				; multiply by $C0
 
 			moveq	#redraw_left_bit,d6
 			bsr.w	UpdateBG_X_Block1
@@ -263,15 +263,15 @@ Deform_MZ:
 		bsr.w	UpdateBG_X_Block2
 
 		; calculate y position
-		move.w	#512,d0					; start with 512px, ignoring 2 chunks
+		move.w	#512,d0				; start with 512px, ignoring 2 chunks
 		move.w	(v_camera_y_pos).w,d1
 		subi.w	#456,d1
-		bcs.s	@noYscroll				; branch if v_camera_y_pos < 456
+		bcs.s	@noYscroll			; branch if v_camera_y_pos < 456
 		move.w	d1,d2
 		add.w	d1,d1
 		add.w	d2,d1
 		asr.w	#2,d1
-		add.w	d1,d0					; d0 = 512+((v_camera_y_pos-456)*0.75) = (v_camera_y_pos*0.75)+170
+		add.w	d1,d0				; d0 = 512+((v_camera_y_pos-456)*0.75) = (v_camera_y_pos*0.75)+170
 	@noYscroll:
 		move.w	d0,(v_bg2_y_pos).w
 		move.w	d0,(v_bg3_y_pos).w
@@ -385,31 +385,31 @@ Deform_SLZ_2:
 		asr.w	#1,d1
 		add.w	d1,d0
 		move.w	#4,d1
-	@buildingLoop1:						; distant black buildings
+	@buildingLoop1:					; distant black buildings
 		move.w	d0,(a1)+
 		dbf	d1,@buildingLoop1
 
 		move.w	d2,d0
 		asr.w	#2,d0
 		move.w	#4,d1
-	@buildingLoop2:						; closer buildings
+	@buildingLoop2:					; closer buildings
 		move.w	d0,(a1)+
 		dbf	d1,@buildingLoop2
 
 		move.w	d2,d0
 		asr.w	#1,d0
 		move.w	#30-1,d1
-	@bottomLoop:						; bottom part of background
+	@bottomLoop:					; bottom part of background
 		move.w	d0,(a1)+
 		dbf	d1,@bottomLoop
 
 		lea	(v_bgscroll_buffer).w,a2
 		move.w	(v_bg1_y_pos).w,d0
-		move.w	d0,d2					; d2 = v_bg1_y_pos
+		move.w	d0,d2				; d2 = v_bg1_y_pos
 		subi.w	#$C0,d0
 		andi.w	#$3F0,d0
-		lsr.w	#3,d0					; d0 = (v_bg1_y_pos-$C0)/8
-		lea	(a2,d0),a2				; jump to relevant part of bg scroll buffer
+		lsr.w	#3,d0				; d0 = (v_bg1_y_pos-$C0)/8
+		lea	(a2,d0),a2			; jump to relevant part of bg scroll buffer
 
 ; ---------------------------------------------------------------------------
 ; Subroutine to update the hscroll buffer with contents of bg scroll buffer
@@ -425,18 +425,18 @@ Deform_SLZ_2:
 UpdateHscrollBuffer:
 		lea	(v_hscroll_buffer).w,a1
 		move.w	#$E,d1
-		move.w	(v_camera_x_pos).w,d0			; get camera x pos
-		neg.w	d0					; make negative
-		swap	d0					; move to high word
-		andi.w	#$F,d2					; read low nybble of bg y pos
-		add.w	d2,d2					; multiply by 2
-		move.w	(a2)+,d0				; get 1st value from bg scroll buffer
-		jmp	@skip_rows(pc,d2.w)			; skip rows that are off screen
+		move.w	(v_camera_x_pos).w,d0		; get camera x pos
+		neg.w	d0				; make negative
+		swap	d0				; move to high word
+		andi.w	#$F,d2				; read low nybble of bg y pos
+		add.w	d2,d2				; multiply by 2
+		move.w	(a2)+,d0			; get 1st value from bg scroll buffer
+		jmp	@skip_rows(pc,d2.w)		; skip rows that are off screen
 	@loop_hscroll:
-		move.w	(a2)+,d0				; get subsequent value from bg scroll buffer
+		move.w	(a2)+,d0			; get subsequent value from bg scroll buffer
 	@skip_rows:
 		rept 16
-		move.l	d0,(a1)+				; write 16 fg/bg values to v_hscroll_buffer
+		move.l	d0,(a1)+			; write 16 fg/bg values to v_hscroll_buffer
 		endr
 		dbf	d1,@loop_hscroll
 		rts
@@ -447,7 +447,7 @@ UpdateHscrollBuffer:
 
 Deform_SYZ:
 		; vertical scrolling
-		move.w	(v_camera_y_diff).w,d5			; get camera y pos change since last frame
+		move.w	(v_camera_y_diff).w,d5		; get camera y pos change since last frame
 		ext.l	d5
 		asl.l	#4,d5
 		move.l	d5,d1
@@ -530,30 +530,30 @@ Deform_SYZ:
 Deform_SBZ:
 ; REV01 - different scrolling for act 1
 
-		tst.b	(v_act).w				; is this act 1?
-		bne.w	Deform_SBZ2				; if not, branch
+		tst.b	(v_act).w			; is this act 1?
+		bne.w	Deform_SBZ2			; if not, branch
 
 		; block 1 - lower black buildings
-		move.w	(v_camera_x_diff).w,d4			; get camera x pos change since last frame
+		move.w	(v_camera_x_diff).w,d4		; get camera x pos change since last frame
 		ext.l	d4
-		asl.l	#7,d4					; multiply by $80
+		asl.l	#7,d4				; multiply by $80
 		moveq	#redraw_left_bit,d6
 		bsr.w	UpdateBG_X_Block1
 
 		; block 3 - distant brown buildings
-		move.w	(v_camera_x_diff).w,d4			; get camera x pos change since last frame
+		move.w	(v_camera_x_diff).w,d4		; get camera x pos change since last frame
 		ext.l	d4
-		asl.l	#6,d4					; multiply by $40
+		asl.l	#6,d4				; multiply by $40
 		moveq	#6,d6
 		bsr.w	UpdateBG_X_Block3
 
 		; block 2 - upper black buildings
-		move.w	(v_camera_x_diff).w,d4			; get camera x pos change since last frame
+		move.w	(v_camera_x_diff).w,d4		; get camera x pos change since last frame
 		ext.l	d4
 		asl.l	#5,d4
 		move.l	d4,d1
 		asl.l	#1,d4
-		add.l	d1,d4					; multiply by $60
+		add.l	d1,d4				; multiply by $60
 		moveq	#redraw_topall_bit,d6
 		bsr.w	UpdateBG_X_Block2
 
@@ -601,21 +601,21 @@ Deform_SBZ:
 		move.w	(v_bg3_x_pos).w,d0
 		neg.w	d0
 		move.w	#9,d1
-	@buildingLoop1:						; distant brown buildings
+	@buildingLoop1:					; distant brown buildings
 		move.w	d0,(a1)+
 		dbf	d1,@buildingLoop1
 
 		move.w	(v_bg2_x_pos).w,d0
 		neg.w	d0
 		move.w	#6,d1
-	@buildingLoop2:						; upper black buildings
+	@buildingLoop2:					; upper black buildings
 		move.w	d0,(a1)+
 		dbf	d1,@buildingLoop2
 
 		move.w	(v_bg1_x_pos).w,d0
 		neg.w	d0
 		move.w	#$A,d1
-	@buildingLoop3:						; lower black buildings
+	@buildingLoop3:					; lower black buildings
 		move.w	d0,(a1)+
 		dbf	d1,@buildingLoop3
 		lea	(v_bgscroll_buffer).w,a2
@@ -657,7 +657,7 @@ Deform_SBZ2:
 ; ---------------------------------------------------------------------------
 
 UpdateCamera_X:
-		move.w	(v_camera_x_pos).w,d4			; save old screen position
+		move.w	(v_camera_x_pos).w,d4		; save old screen position
 		bsr.s	UCX_Camera
 		move.w	(v_camera_x_pos).w,d0
 		andi.w	#$10,d0
@@ -666,7 +666,7 @@ UpdateCamera_X:
 		bne.s	@return
 		eori.b	#$10,(v_fg_x_redraw_flag).w
 		move.w	(v_camera_x_pos).w,d0
-		sub.w	d4,d0					; compare new with old screen position
+		sub.w	d4,d0				; compare new with old screen position
 		bpl.s	@scrollRight
 
 		bset	#redraw_left_bit,(v_fg_redraw_direction).w ; screen moves backward
@@ -681,40 +681,40 @@ UpdateCamera_X:
 
 UCX_Camera:
 		move.w	(v_ost_player+ost_x_pos).w,d0
-		sub.w	(v_camera_x_pos).w,d0			; d0 = Sonic's distance from left edge of screen
-		subi.w	#144,d0					; is distance less than 144px?
-		bcs.s	UCX_BehindMid				; if yes, branch
-		subi.w	#16,d0					; is distance more than 160px?
-		bcc.s	UCX_AheadOfMid				; if yes, branch
-		clr.w	(v_camera_x_diff).w			; no camera movement
+		sub.w	(v_camera_x_pos).w,d0		; d0 = Sonic's distance from left edge of screen
+		subi.w	#144,d0				; is distance less than 144px?
+		bcs.s	UCX_BehindMid			; if yes, branch
+		subi.w	#16,d0				; is distance more than 160px?
+		bcc.s	UCX_AheadOfMid			; if yes, branch
+		clr.w	(v_camera_x_diff).w		; no camera movement
 		rts	
 ; ===========================================================================
 
 UCX_AheadOfMid:
-		cmpi.w	#16,d0					; is Sonic within 16px of middle area?
-		bcs.s	@within_16				; if yes, branch
-		move.w	#16,d0					; set to 16 if greater
+		cmpi.w	#16,d0				; is Sonic within 16px of middle area?
+		bcs.s	@within_16			; if yes, branch
+		move.w	#16,d0				; set to 16 if greater
 
 	@within_16:
-		add.w	(v_camera_x_pos).w,d0			; d0 = new camera x pos
-		cmp.w	(v_boundary_right).w,d0			; is camera within boundary?
-		blt.s	UCX_SetScreen				; if yes, branch
-		move.w	(v_boundary_right).w,d0			; stop camera moving outside boundary
+		add.w	(v_camera_x_pos).w,d0		; d0 = new camera x pos
+		cmp.w	(v_boundary_right).w,d0		; is camera within boundary?
+		blt.s	UCX_SetScreen			; if yes, branch
+		move.w	(v_boundary_right).w,d0		; stop camera moving outside boundary
 
 UCX_SetScreen:
 		move.w	d0,d1
-		sub.w	(v_camera_x_pos).w,d1			; d1 = difference since last camera x pos
-		asl.w	#8,d1					; move into high byte (multiply by $100)
-		move.w	d0,(v_camera_x_pos).w			; set new screen position
-		move.w	d1,(v_camera_x_diff).w			; set distance for camera movement
+		sub.w	(v_camera_x_pos).w,d1		; d1 = difference since last camera x pos
+		asl.w	#8,d1				; move into high byte (multiply by $100)
+		move.w	d0,(v_camera_x_pos).w		; set new screen position
+		move.w	d1,(v_camera_x_diff).w		; set distance for camera movement
 		rts	
 ; ===========================================================================
 
 UCX_BehindMid:
-		add.w	(v_camera_x_pos).w,d0			; d0 = new camera x pos
-		cmp.w	(v_boundary_left).w,d0			; is camera within boundary?
-		bgt.s	UCX_SetScreen				; if yes, branch
-		move.w	(v_boundary_left).w,d0			; stop camera moving outside boundary
+		add.w	(v_camera_x_pos).w,d0		; d0 = new camera x pos
+		cmp.w	(v_boundary_left).w,d0		; is camera within boundary?
+		bgt.s	UCX_SetScreen			; if yes, branch
+		move.w	(v_boundary_left).w,d0		; stop camera moving outside boundary
 		bra.s	UCX_SetScreen
 
 ; ---------------------------------------------------------------------------
@@ -742,100 +742,100 @@ AutoScroll:
 UpdateCamera_Y:
 		moveq	#0,d1
 		move.w	(v_ost_player+ost_y_pos).w,d0
-		sub.w	(v_camera_y_pos).w,d0			; d0 = Sonic's distance from top of screen
+		sub.w	(v_camera_y_pos).w,d0		; d0 = Sonic's distance from top of screen
 		btst	#status_jump_bit,(v_ost_player+ost_status).w ; is Sonic jumping/rolling?
-		beq.s	@not_rolling				; if not, branch
+		beq.s	@not_rolling			; if not, branch
 		subq.w	#5,d0
 
 	@not_rolling:
 		btst	#status_air_bit,(v_ost_player+ost_status).w ; is Sonic in the air?
-		beq.s	@ground					; if not, branch
+		beq.s	@ground				; if not, branch
 
-		addi.w	#32,d0					; pretend Sonic is 32px lower
-		sub.w	(v_camera_y_shift).w,d0			; is Sonic within 96px of top of screen? (or other value if looked up/down recenly)
-		bcs.s	UCY_OutsideMid_Air			; if yes, branch
-		subi.w	#64,d0					; is distance more than 160px?
-		bcc.s	UCY_OutsideMid_Air			; if yes, branch
-		tst.b	(f_boundary_bottom_change).w		; is bottom level boundary set to change?
-		bne.s	UCY_BoundaryChange			; if yes, branch
+		addi.w	#32,d0				; pretend Sonic is 32px lower
+		sub.w	(v_camera_y_shift).w,d0		; is Sonic within 96px of top of screen? (or other value if looked up/down recenly)
+		bcs.s	UCY_OutsideMid_Air		; if yes, branch
+		subi.w	#64,d0				; is distance more than 160px?
+		bcc.s	UCY_OutsideMid_Air		; if yes, branch
+		tst.b	(f_boundary_bottom_change).w	; is bottom level boundary set to change?
+		bne.s	UCY_BoundaryChange		; if yes, branch
 		bra.s	@no_change
 ; ===========================================================================
 
 @ground:
-		sub.w	(v_camera_y_shift).w,d0			; is Sonic exactly 96px from top of screen?
-		bne.s	UCY_OutsideMid_Ground			; if not, branch
-		tst.b	(f_boundary_bottom_change).w		; is bottom level boundary set to change?
+		sub.w	(v_camera_y_shift).w,d0		; is Sonic exactly 96px from top of screen?
+		bne.s	UCY_OutsideMid_Ground		; if not, branch
+		tst.b	(f_boundary_bottom_change).w	; is bottom level boundary set to change?
 		bne.s	UCY_BoundaryChange
 
 @no_change:
-		clr.w	(v_camera_y_diff).w			; no camera movement
+		clr.w	(v_camera_y_diff).w		; no camera movement
 		rts	
 ; ===========================================================================
 
 UCY_OutsideMid_Ground:
-		cmpi.w	#96,(v_camera_y_shift).w		; has Sonic looked up/down recently? (default y shift is 96)
-		bne.s	@y_shift_different			; if yes, branch
+		cmpi.w	#96,(v_camera_y_shift).w	; has Sonic looked up/down recently? (default y shift is 96)
+		bne.s	@y_shift_different		; if yes, branch
 
-		move.w	(v_ost_player+ost_inertia).w,d1		; get Sonic's inertia
-		bpl.s	@inertia_positive			; branch if positive
-		neg.w	d1					; make it positive
+		move.w	(v_ost_player+ost_inertia).w,d1	; get Sonic's inertia
+		bpl.s	@inertia_positive		; branch if positive
+		neg.w	d1				; make it positive
 
 	@inertia_positive:
 		cmpi.w	#$800,d1
-		bcc.s	UCY_OutsideMid_Air			; branch if inertia >= $800
+		bcc.s	UCY_OutsideMid_Air		; branch if inertia >= $800
 		move.w	#$600,d1
-		cmpi.w	#6,d0					; is Sonic more than 6px below middle area?
-		bgt.s	UCY_BelowMid				; if yes, branch
-		cmpi.w	#-6,d0					; is Sonic more than 6px above middle area?
-		blt.s	UCY_AboveMid				; if yes, branch
+		cmpi.w	#6,d0				; is Sonic more than 6px below middle area?
+		bgt.s	UCY_BelowMid			; if yes, branch
+		cmpi.w	#-6,d0				; is Sonic more than 6px above middle area?
+		blt.s	UCY_AboveMid			; if yes, branch
 		bra.s	UCY_InsideMid
 ; ===========================================================================
 
 @y_shift_different:
 		move.w	#$200,d1
-		cmpi.w	#2,d0					; is Sonic more than 2px below middle area?
-		bgt.s	UCY_BelowMid				; if yes, branch
-		cmpi.w	#-2,d0					; is Sonic more than 2px above middle area?
-		blt.s	UCY_AboveMid				; if yes, branch
+		cmpi.w	#2,d0				; is Sonic more than 2px below middle area?
+		bgt.s	UCY_BelowMid			; if yes, branch
+		cmpi.w	#-2,d0				; is Sonic more than 2px above middle area?
+		blt.s	UCY_AboveMid			; if yes, branch
 		bra.s	UCY_InsideMid
 ; ===========================================================================
 
 UCY_OutsideMid_Air:
 		move.w	#$1000,d1
-		cmpi.w	#16,d0					; is Sonic more than 16px below middle area?
-		bgt.s	UCY_BelowMid				; if yes, branch
-		cmpi.w	#-16,d0					; is Sonic more than 16px above middle area?
-		blt.s	UCY_AboveMid				; if yes, branch
+		cmpi.w	#16,d0				; is Sonic more than 16px below middle area?
+		bgt.s	UCY_BelowMid			; if yes, branch
+		cmpi.w	#-16,d0				; is Sonic more than 16px above middle area?
+		blt.s	UCY_AboveMid			; if yes, branch
 		bra.s	UCY_InsideMid
 ; ===========================================================================
 
 UCY_BoundaryChange:
 		moveq	#0,d0
-		move.b	d0,(f_boundary_bottom_change).w		; clear boundary change flag
+		move.b	d0,(f_boundary_bottom_change).w	; clear boundary change flag
 
 UCY_InsideMid:
 		moveq	#0,d1
-		move.w	d0,d1					; d0/d1 = Sonic's distance from middle area
-		add.w	(v_camera_y_pos).w,d1			; add camera y pos to d1
-		tst.w	d0					; is Sonic below middle?
-		bpl.w	UCY_BelowMid_Short			; if yes, branch
+		move.w	d0,d1				; d0/d1 = Sonic's distance from middle area
+		add.w	(v_camera_y_pos).w,d1		; add camera y pos to d1
+		tst.w	d0				; is Sonic below middle?
+		bpl.w	UCY_BelowMid_Short		; if yes, branch
 		bra.w	UCY_AboveMid_Short
 ; ===========================================================================
 
 UCY_AboveMid:
-		neg.w	d1					; d1 = -$200/-$600/-$1000
-		ext.l	d1					; convert to longword
-		asl.l	#8,d1					; d1 = -$20000/-$60000/-$100000
-		add.l	(v_camera_y_pos).w,d1			; add v_camera_y_pos
-		swap	d1					; d1 = v_camera_y_pos minus 2/6/$10 in low word
+		neg.w	d1				; d1 = -$200/-$600/-$1000
+		ext.l	d1				; convert to longword
+		asl.l	#8,d1				; d1 = -$20000/-$60000/-$100000
+		add.l	(v_camera_y_pos).w,d1		; add v_camera_y_pos
+		swap	d1				; d1 = v_camera_y_pos minus 2/6/$10 in low word
 
 UCY_AboveMid_Short:
-		cmp.w	(v_boundary_top).w,d1			; is camera within top boundary?
-		bgt.s	UCY_SetScreen				; if yes, branch
-		cmpi.w	#-$100,d1				; is camera no more than 255px outside boundary?
-		bgt.s	@just_outside				; if yes, branch
+		cmp.w	(v_boundary_top).w,d1		; is camera within top boundary?
+		bgt.s	UCY_SetScreen			; if yes, branch
+		cmpi.w	#-$100,d1			; is camera no more than 255px outside boundary?
+		bgt.s	@just_outside			; if yes, branch
 
-		andi.w	#$7FF,d1				; clear high bits for levels that wrap vertically
+		andi.w	#$7FF,d1			; clear high bits for levels that wrap vertically
 		andi.w	#$7FF,(v_ost_player+ost_y_pos).w
 		andi.w	#$7FF,(v_camera_y_pos).w
 		andi.w	#$3FF,(v_bg1_y_pos).w
@@ -849,13 +849,13 @@ UCY_AboveMid_Short:
 
 UCY_BelowMid:
 		ext.l	d1
-		asl.l	#8,d1					; d1 = $20000/$60000/$100000
-		add.l	(v_camera_y_pos).w,d1			; add v_camera_y_pos
-		swap	d1					; d1 = v_camera_y_pos plus 2/6/$10 in low word
+		asl.l	#8,d1				; d1 = $20000/$60000/$100000
+		add.l	(v_camera_y_pos).w,d1		; add v_camera_y_pos
+		swap	d1				; d1 = v_camera_y_pos plus 2/6/$10 in low word
 
 UCY_BelowMid_Short:
-		cmp.w	(v_boundary_bottom).w,d1		; is camera within bottom boundary?
-		blt.s	UCY_SetScreen				; if yes, branch
+		cmp.w	(v_boundary_bottom).w,d1	; is camera within bottom boundary?
+		blt.s	UCY_SetScreen			; if yes, branch
 		subi.w	#$800,d1
 		bcs.s	@just_outside
 		andi.w	#$7FF,(v_ost_player+ost_y_pos).w
@@ -871,10 +871,10 @@ UCY_SetScreen:
 		move.w	(v_camera_y_pos).w,d4
 		swap	d1
 		move.l	d1,d3
-		sub.l	(v_camera_y_pos).w,d3			; d3 = difference since last camera y pos
+		sub.l	(v_camera_y_pos).w,d3		; d3 = difference since last camera y pos
 		ror.l	#8,d3
-		move.w	d3,(v_camera_y_diff).w			; set distance for camera movement
-		move.l	d1,(v_camera_y_pos).w			; set new screen position
+		move.w	d3,(v_camera_y_diff).w		; set distance for camera movement
+		move.l	d1,(v_camera_y_pos).w		; set new screen position
 		move.w	(v_camera_y_pos).w,d0
 		andi.w	#$10,d0
 		move.b	(v_fg_y_redraw_flag).w,d1
@@ -906,18 +906,18 @@ UCY_SetScreen:
 
 UpdateBG_XY:
 		move.l	(v_bg1_x_pos).w,d2
-		move.l	d2,d0					; save old bg position
-		add.l	d4,d0					; apply difference
-		move.l	d0,(v_bg1_x_pos).w			; update bg position
+		move.l	d2,d0				; save old bg position
+		add.l	d4,d0				; apply difference
+		move.l	d0,(v_bg1_x_pos).w		; update bg position
 		move.l	d0,d1
 		swap	d1
 		andi.w	#$10,d1
 		move.b	(v_bg1_x_redraw_flag).w,d3
 		eor.b	d3,d1
-		bne.s	@no_redraw_x				; insufficient change to redraw bg
+		bne.s	@no_redraw_x			; insufficient change to redraw bg
 		eori.b	#$10,(v_bg1_x_redraw_flag).w
-		sub.l	d2,d0					; new bg pos minus old
-		bpl.s	@redraw_right				; branch if positive (i.e. moving right)
+		sub.l	d2,d0				; new bg pos minus old
+		bpl.s	@redraw_right			; branch if positive (i.e. moving right)
 		bset	#redraw_left_bit,(v_bg1_redraw_direction).w
 		bra.s	@next
 	@redraw_right:
@@ -977,8 +977,8 @@ UpdateBG_Y2:
 ; ---------------------------------------------------------------------------
 
 UpdateBG_Y_Absolute:
-		move.w	(v_bg1_y_pos).w,d3			; save old bg position
-		move.w	d0,(v_bg1_y_pos).w			; update bg position
+		move.w	(v_bg1_y_pos).w,d3		; save old bg position
+		move.w	d0,(v_bg1_y_pos).w		; update bg position
 		move.w	d0,d1
 		andi.w	#$10,d1
 		move.b	(v_bg1_y_redraw_flag).w,d2

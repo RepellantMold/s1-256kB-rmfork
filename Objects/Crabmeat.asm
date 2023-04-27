@@ -20,8 +20,8 @@ Crab_Index:	index *,,2
 		ptr Crab_BallMain
 		ptr Crab_BallMove
 
-ost_crab_wait_time:	equ $30					; time until crabmeat fires (2 bytes)
-ost_crab_mode:		equ $32					; current action - 0/1 = not firing; 2/3 = firing
+ost_crab_wait_time:	equ $30				; time until crabmeat fires (2 bytes)
+ost_crab_mode:		equ $32				; current action - 0/1 = not firing; 2/3 = firing
 
 Crab_Settings:	dc.b ost_height,16
 		dc.b ost_width,8
@@ -42,17 +42,17 @@ Crab_Main:	; Routine 0
 		bsr.w	SetupObject
 		cmpi.b	#id_GHZ,(v_zone).w
 		beq.s	@is_ghz
-		move.w	#$411,ost_tile(a0)			; SYZ
+		move.w	#$411,ost_tile(a0)		; SYZ
 		
 	@is_ghz:
-		bsr.w	ObjectFall				; make crabmeat fall
-		jsr	(FindFloorObj).l			; find floor
-		tst.w	d1					; has crabmeat hit floor?
-		bpl.s	@floornotfound				; if not, branch
-		add.w	d1,ost_y_pos(a0)			; align to floor
-		move.b	d3,ost_angle(a0)			; copy floor angle
-		move.w	#0,ost_y_vel(a0)			; stop falling
-		addq.b	#2,ost_routine(a0)			; goto Crab_Action next
+		bsr.w	ObjectFall			; make crabmeat fall
+		jsr	(FindFloorObj).l		; find floor
+		tst.w	d1				; has crabmeat hit floor?
+		bpl.s	@floornotfound			; if not, branch
+		add.w	d1,ost_y_pos(a0)		; align to floor
+		move.b	d3,ost_angle(a0)		; copy floor angle
+		move.w	#0,ost_y_vel(a0)		; stop falling
+		addq.b	#2,ost_routine(a0)		; goto Crab_Action next
 
 	@floornotfound:
 		rts	
@@ -74,21 +74,21 @@ Crab_Action_Index:
 ; ===========================================================================
 
 Crab_WaitFire:
-		subq.w	#1,ost_crab_wait_time(a0)		; decrement timer
-		bpl.s	@dontmove				; branch if time remains
-		tst.b	ost_render(a0)				; is crabmeat on-screen?
-		bpl.s	@movecrab				; if not, branch
-		bchg	#1,ost_crab_mode(a0)			; change flag for firing
-		bne.s	@fire					; branch if previously set
+		subq.w	#1,ost_crab_wait_time(a0)	; decrement timer
+		bpl.s	@dontmove			; branch if time remains
+		tst.b	ost_render(a0)			; is crabmeat on-screen?
+		bpl.s	@movecrab			; if not, branch
+		bchg	#1,ost_crab_mode(a0)		; change flag for firing
+		bne.s	@fire				; branch if previously set
 
 	@movecrab:
-		addq.b	#2,ost_routine2(a0)			; goto Crab_Walk next
-		move.w	#127,ost_crab_wait_time(a0)		; set time delay to approx 2 seconds
-		move.w	#$80,ost_x_vel(a0)			; move Crabmeat to the right
+		addq.b	#2,ost_routine2(a0)		; goto Crab_Walk next
+		move.w	#127,ost_crab_wait_time(a0)	; set time delay to approx 2 seconds
+		move.w	#$80,ost_x_vel(a0)		; move Crabmeat to the right
 		move.b	#id_ani_crab_walk,ost_anim(a0)
 		bchg	#status_xflip_bit,ost_status(a0)
 		bne.s	@noflip
-		neg.w	ost_x_vel(a0)				; change direction
+		neg.w	ost_x_vel(a0)			; change direction
 
 	@dontmove:
 	@noflip:
@@ -97,7 +97,7 @@ Crab_WaitFire:
 
 @fire:
 		move.w	#59,ost_crab_wait_time(a0)
-		move.b	#id_ani_crab_firing,ost_anim(a0)	; use firing animation
+		move.b	#id_ani_crab_firing,ost_anim(a0) ; use firing animation
 		bsr.s	@failleft
 		subi.w	#$20,ost_x_pos(a1)
 		move.w	#-$100,ost_x_vel(a1)
@@ -124,35 +124,35 @@ Crab_Settings2:	dc.b ost_id,id_Crabmeat
 ; ===========================================================================
 
 Crab_Walk:
-		subq.w	#1,ost_crab_wait_time(a0)		; decrement timer
-		bmi.s	@stop					; branch if -1
-		bsr.w	SpeedToPos				; update position
-		bchg	#0,ost_crab_mode(a0)			; change flag for floor check
-		bne.s	@findfloor_here				; branch if previously set
+		subq.w	#1,ost_crab_wait_time(a0)	; decrement timer
+		bmi.s	@stop				; branch if -1
+		bsr.w	SpeedToPos			; update position
+		bchg	#0,ost_crab_mode(a0)		; change flag for floor check
+		bne.s	@findfloor_here			; branch if previously set
 		move.w	ost_x_pos(a0),d3
-		addi.w	#$10,d3					; find floor 16px to the right
+		addi.w	#$10,d3				; find floor 16px to the right
 		btst	#status_xflip_bit,ost_status(a0)
 		beq.s	@noflip
-		subi.w	#$20,d3					; find floor 16px to the left
+		subi.w	#$20,d3				; find floor 16px to the left
 
 	@noflip:
 		jsr	(FindFloorObj2).l
-		cmpi.w	#-8,d1					; is there a wall ahead?
-		blt.s	@stop					; if yes, branch
-		cmpi.w	#$C,d1					; is there a drop ahead?
-		bge.s	@stop					; if yes, branch
+		cmpi.w	#-8,d1				; is there a wall ahead?
+		blt.s	@stop				; if yes, branch
+		cmpi.w	#$C,d1				; is there a drop ahead?
+		bge.s	@stop				; if yes, branch
 		rts	
 ; ===========================================================================
 
 @findfloor_here:
-		jsr	(FindFloorObj).l			; find floor at current position
-		add.w	d1,ost_y_pos(a0)			; align to floor
+		jsr	(FindFloorObj).l		; find floor at current position
+		add.w	d1,ost_y_pos(a0)		; align to floor
 		move.b	#id_ani_crab_walk,ost_anim(a0)
 		rts	
 ; ===========================================================================
 
 @stop:
-		subq.b	#2,ost_routine2(a0)			; goto Crab_WaitFire next
+		subq.b	#2,ost_routine2(a0)		; goto Crab_WaitFire next
 		move.w	#59,ost_crab_wait_time(a0)
 		move.w	#0,ost_x_vel(a0)
 		move.b	#id_ani_crab_stand,ost_anim(a0)	; use standing animation
@@ -178,8 +178,8 @@ Crab_BallMove:	; Routine 8
 		bsr.w	DisplaySprite
 		move.w	(v_boundary_bottom).w,d0
 		addi.w	#224,d0
-		cmp.w	ost_y_pos(a0),d0			; has object moved below the level boundary?
-		bcs.s	Crab_Delete					; if yes, branch
+		cmp.w	ost_y_pos(a0),d0		; has object moved below the level boundary?
+		bcs.s	Crab_Delete			; if yes, branch
 		rts	
 
 Crab_Settings3:	dc.b ost_routine,8

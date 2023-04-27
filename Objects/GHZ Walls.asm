@@ -32,16 +32,16 @@ Edge_Settings:	dc.b ost_routine,2
 Edge_Main:	; Routine 0
 		lea	Edge_Settings(pc),a2
 		bsr.w	SetupObject
-		bclr	#4,ost_frame(a0)			; clear 4th bit (deduct $10)
-		beq.s	Edge_Solid				; branch if already clear (subtype 0/1/2 is solid)
+		bclr	#4,ost_frame(a0)		; clear 4th bit (deduct $10)
+		beq.s	Edge_Solid			; branch if already clear (subtype 0/1/2 is solid)
 
-		addq.b	#2,ost_routine(a0)			; goto Edge_Display next
-		bra.s	Edge_Display				; bit 4 was already set (subtype $10/$11/$12 is not solid)
+		addq.b	#2,ost_routine(a0)		; goto Edge_Display next
+		bra.s	Edge_Display			; bit 4 was already set (subtype $10/$11/$12 is not solid)
 ; ===========================================================================
 
 Edge_Solid:	; Routine 2
-		move.w	#$13,d1					; width
-		move.w	#$28,d2					; height
+		move.w	#$13,d1				; width
+		move.w	#$28,d2				; height
 		move.w	#$28,d3
 		move.w	ost_x_pos(a0),d4
 		bsr.w	SolidObject

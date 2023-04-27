@@ -15,7 +15,7 @@ Bat_Index:	index *,,2
 		ptr Bat_Main
 		ptr Bat_Action
 
-ost_bat_sonic_y_pos:	equ $36					; Sonic's y position (2 bytes)
+ost_bat_sonic_y_pos:	equ $36				; Sonic's y position (2 bytes)
 
 Bat_Settings:	dc.b ost_routine,2
 		dc.b ost_render,render_rel
@@ -54,89 +54,89 @@ Bat_Action_Index:
 
 Bat_DropChk:
 		move.w	#$80,d2
-		bsr.w	Bat_ChkDist				; cmp d2 to x dist between Sonic and batbrain
-		bcc.s	@nodrop					; branch if x dist > 128px
+		bsr.w	Bat_ChkDist			; cmp d2 to x dist between Sonic and batbrain
+		bcc.s	@nodrop				; branch if x dist > 128px
 		move.w	(v_ost_player+ost_y_pos).w,d0
 		move.w	d0,ost_bat_sonic_y_pos(a0)
 		sub.w	ost_y_pos(a0),d0
-		bcs.s	@nodrop					; branch if Sonic is above the batbrain
+		bcs.s	@nodrop				; branch if Sonic is above the batbrain
 		cmpi.w	#$80,d0
-		bcc.s	@nodrop					; branch if Sonic is > 128px below the batbrain
+		bcc.s	@nodrop				; branch if Sonic is > 128px below the batbrain
 
-		move.b	(v_vblank_counter_byte).w,d0		; get byte that increments every frame
-		add.b	d7,d0					; add OST index number (so each batbrain updates on a different frame)
-		andi.b	#7,d0					; read only bits 0-2
-		bne.s	@nodrop					; branch if any are set
+		move.b	(v_vblank_counter_byte).w,d0	; get byte that increments every frame
+		add.b	d7,d0				; add OST index number (so each batbrain updates on a different frame)
+		andi.b	#7,d0				; read only bits 0-2
+		bne.s	@nodrop				; branch if any are set
 		move.b	#id_ani_bat_drop,ost_anim(a0)
-		addq.b	#2,ost_routine2(a0)			; goto Bat_DropFly next
+		addq.b	#2,ost_routine2(a0)		; goto Bat_DropFly next
 
 	@nodrop:
 		rts	
 ; ===========================================================================
 
 Bat_DropFly:
-		bsr.w	SpeedToPos				; update position
-		addi.w	#$18,ost_y_vel(a0)			; make batbrain fall
+		bsr.w	SpeedToPos			; update position
+		addi.w	#$18,ost_y_vel(a0)		; make batbrain fall
 		move.w	#$80,d2
-		bsr.w	Bat_ChkDist				; update xflip flag and get direction to fly
+		bsr.w	Bat_ChkDist			; update xflip flag and get direction to fly
 		move.w	ost_bat_sonic_y_pos(a0),d0
 		sub.w	ost_y_pos(a0),d0
-		bcs.s	@chkdel					; branch if Sonic is above the batbrain
+		bcs.s	@chkdel				; branch if Sonic is above the batbrain
 		cmpi.w	#$10,d0
-		bcc.s	@dropmore				; branch if Sonic is > 16px below the batbrain
+		bcc.s	@dropmore			; branch if Sonic is > 16px below the batbrain
 
-		move.w	d1,ost_x_vel(a0)			; make batbrain fly horizontally
-		move.w	#0,ost_y_vel(a0)			; stop batbrain falling
+		move.w	d1,ost_x_vel(a0)		; make batbrain fly horizontally
+		move.w	#0,ost_y_vel(a0)		; stop batbrain falling
 		move.b	#id_ani_bat_fly,ost_anim(a0)
-		addq.b	#2,ost_routine2(a0)			; goto Bat_FlapSound next
+		addq.b	#2,ost_routine2(a0)		; goto Bat_FlapSound next
 
 	@dropmore:
 		rts	
 
 	@chkdel:
 		tst.b	ost_render(a0)
-		bpl.w	DeleteObject				; branch if batbrain is off screen
+		bpl.w	DeleteObject			; branch if batbrain is off screen
 		rts	
 ; ===========================================================================
 
 Bat_FlapSound:
-		move.b	(v_vblank_counter_byte).w,d0		; get byte that increments every frame
-		andi.b	#$F,d0					; read only low nybble
-		bne.s	@nosound				; branch if not 0
-		play.w	1, jsr, sfx_basaran			; play flapping sound every 16th frame
+		move.b	(v_vblank_counter_byte).w,d0	; get byte that increments every frame
+		andi.b	#$F,d0				; read only low nybble
+		bne.s	@nosound			; branch if not 0
+		play.w	1, jsr, sfx_basaran		; play flapping sound every 16th frame
 
 	@nosound:
-		bsr.w	SpeedToPos				; update position
+		bsr.w	SpeedToPos			; update position
 		move.w	(v_ost_player+ost_x_pos).w,d0
 		sub.w	ost_x_pos(a0),d0
-		bcc.s	@sonic_right				; if Sonic is right of batbrain, branch
-		neg.w	d0					; d0 = x dist between Sonic and batbrain
+		bcc.s	@sonic_right			; if Sonic is right of batbrain, branch
+		neg.w	d0				; d0 = x dist between Sonic and batbrain
 
 	@sonic_right:
 		cmpi.w	#$80,d0
-		bcs.s	@dontflyup				; branch if Sonic is < 128px from batbrain
-		move.b	(v_vblank_counter_byte).w,d0		; get byte that increments every frame
-		add.b	d7,d0					; add OST index number (so each batbrain updates on a different frame)
-		andi.b	#7,d0					; read only bits 0-2
-		bne.s	@dontflyup				; branch if any are set
-		addq.b	#2,ost_routine2(a0)			; goto Bat_FlyUp next
+		bcs.s	@dontflyup			; branch if Sonic is < 128px from batbrain
+		move.b	(v_vblank_counter_byte).w,d0	; get byte that increments every frame
+		add.b	d7,d0				; add OST index number (so each batbrain updates on a different frame)
+		andi.b	#7,d0				; read only bits 0-2
+		bne.s	@dontflyup			; branch if any are set
+		addq.b	#2,ost_routine2(a0)		; goto Bat_FlyUp next
 
 	@dontflyup:
 		rts	
 ; ===========================================================================
 
 Bat_FlyUp:
-		bsr.w	SpeedToPos				; update position
-		subi.w	#$18,ost_y_vel(a0)			; make batbrain fly upwards
+		bsr.w	SpeedToPos			; update position
+		subi.w	#$18,ost_y_vel(a0)		; make batbrain fly upwards
 		bsr.w	FindCeilingObj
-		tst.w	d1					; has batbrain hit the ceiling?
-		bpl.s	@noceiling				; if not, branch
-		sub.w	d1,ost_y_pos(a0)			; align to ceiling
-		andi.w	#$FFF8,ost_x_pos(a0)			; snap to tile
-		clr.w	ost_x_vel(a0)				; stop batbrain moving
+		tst.w	d1				; has batbrain hit the ceiling?
+		bpl.s	@noceiling			; if not, branch
+		sub.w	d1,ost_y_pos(a0)		; align to ceiling
+		andi.w	#$FFF8,ost_x_pos(a0)		; snap to tile
+		clr.w	ost_x_vel(a0)			; stop batbrain moving
 		clr.w	ost_y_vel(a0)
 		clr.b	ost_anim(a0)
-		clr.b	ost_routine2(a0)			; goto Bat_DropChk next
+		clr.b	ost_routine2(a0)		; goto Bat_DropChk next
 
 	@noceiling:
 		rts
@@ -157,7 +157,7 @@ Bat_ChkDist:
 		bset	#status_xflip_bit,ost_status(a0)
 		move.w	(v_ost_player+ost_x_pos).w,d0
 		sub.w	ost_x_pos(a0),d0
-		bcc.s	@right					; if Sonic is right of batbrain, branch
+		bcc.s	@right				; if Sonic is right of batbrain, branch
 		neg.w	d0
 		neg.w	d1
 		bclr	#status_xflip_bit,ost_status(a0)

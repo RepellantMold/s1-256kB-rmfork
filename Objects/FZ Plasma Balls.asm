@@ -19,11 +19,11 @@ Plasma_Index:	index *,,2
 		ptr Plasma_Finish
 		ptr Plasma_Balls
 
-ost_plasma_flag:	equ $29					; flag set when firing
-ost_plasma_x_target:	equ $30					; x position where plasma ball stops (2 bytes)
-ost_plasma_count_top:	equ $32					; number of plasma balls moving across top (2 bytes)
-ost_plasma_parent:	equ $34					; address of OST of parent object (4 bytes)
-ost_plasma_count_any:	equ $38					; number of plasma balls on-screen (2 bytes)
+ost_plasma_flag:	equ $29				; flag set when firing
+ost_plasma_x_target:	equ $30				; x position where plasma ball stops (2 bytes)
+ost_plasma_count_top:	equ $32				; number of plasma balls moving across top (2 bytes)
+ost_plasma_parent:	equ $34				; address of OST of parent object (4 bytes)
+ost_plasma_count_any:	equ $38				; number of plasma balls on-screen (2 bytes)
 
 Plasma_Settings:
 		dc.b ost_routine,2
@@ -49,19 +49,19 @@ Plasma_Main:	; Routine 0
 
 Plasma_Generator:
 		; Routine 2
-		movea.l	ost_plasma_parent(a0),a1		; get address of OST of parent object
-		cmpi.b	#id_BFZ_Eggman_Fall,ost_fz_mode(a1)	; has boss been beaten?
-		bne.s	@not_beaten				; if not, branch
-		move.b	#id_ExplosionBomb,(a0)			; replace object with explosion
+		movea.l	ost_plasma_parent(a0),a1	; get address of OST of parent object
+		cmpi.b	#id_BFZ_Eggman_Fall,ost_fz_mode(a1) ; has boss been beaten?
+		bne.s	@not_beaten			; if not, branch
+		move.b	#id_ExplosionBomb,(a0)		; replace object with explosion
 		move.b	#id_ExBom_Main,ost_routine(a0)
 		jmp	(DisplaySprite).l
 ; ===========================================================================
 
 @not_beaten:
 		move.b	#id_ani_plaunch_red,ost_anim(a0)
-		tst.b	ost_plasma_flag(a0)			; is plasma set to activate?
-		beq.s	Plasma_Update				; if not, branch
-		addq.b	#2,ost_routine(a0)			; goto Plasma_MakeBalls next
+		tst.b	ost_plasma_flag(a0)		; is plasma set to activate?
+		beq.s	Plasma_Update			; if not, branch
+		addq.b	#2,ost_routine(a0)		; goto Plasma_MakeBalls next
 		move.b	#id_ani_plaunch_redsparking,ost_anim(a0) ; use sparking animation
 		move.b	#$3E,ost_subtype(a0)
 
@@ -73,11 +73,11 @@ Plasma_Update:
 		jsr	(SolidObject).l
 		move.w	(v_ost_player+ost_x_pos).w,d0
 		sub.w	ost_x_pos(a0),d0
-		bmi.s	@animate				; branch if Sonic is left of the plasma launcher
+		bmi.s	@animate			; branch if Sonic is left of the plasma launcher
 		subi.w	#320,d0
-		bmi.s	@animate				; branch if Sonic is within 320px of plasma launcher
-		tst.b	ost_render(a0)				; is object on-screen?
-		bpl.w	Cyl_Delete				; if not, branch
+		bmi.s	@animate			; branch if Sonic is within 320px of plasma launcher
+		tst.b	ost_render(a0)			; is object on-screen?
+		bpl.w	Cyl_Delete			; if not, branch
 
 	@animate:
 		lea	Ani_PLaunch(pc),a1
@@ -88,36 +88,36 @@ Plasma_Update_sub:
 
 Plasma_MakeBalls:
 		; Routine 4
-		tst.b	ost_plasma_flag(a0)			; is plasma set to activate?
-		beq.w	@skip_balls				; if not, branch
+		tst.b	ost_plasma_flag(a0)		; is plasma set to activate?
+		beq.w	@skip_balls			; if not, branch
 		clr.b	ost_plasma_flag(a0)
-		add.w	ost_plasma_x_target(a0),d0		; these four lines do nothing
+		add.w	ost_plasma_x_target(a0),d0	; these four lines do nothing
 		andi.w	#$1E,d0
 		adda.w	d0,a2
 		addq.w	#4,ost_plasma_x_target(a0)
-		clr.w	ost_plasma_count_top(a0)		; initialise plasma ball count
-		moveq	#4-1,d2					; number of plasma balls
+		clr.w	ost_plasma_count_top(a0)	; initialise plasma ball count
+		moveq	#4-1,d2				; number of plasma balls
 
 	@loop:
-		jsr	(FindNextFreeObj).l			; find free OST slot
+		jsr	(FindNextFreeObj).l		; find free OST slot
 		lea	Plasma_Settings2(pc),a2
 		jsr	SetupChild
-		jsr	(RandomNumber).l			; d0 = random number
-		move.w	ost_plasma_count_top(a0),d1		; id of plasma ball (0-3)
-		muls.w	#-$4F,d1				; avg distance between balls
-		addi.w	#$2578,d1				; add initial x pos
+		jsr	(RandomNumber).l		; d0 = random number
+		move.w	ost_plasma_count_top(a0),d1	; id of plasma ball (0-3)
+		muls.w	#-$4F,d1			; avg distance between balls
+		addi.w	#$2578,d1			; add initial x pos
 		andi.w	#$1F,d0
 		subi.w	#$10,d0
-		add.w	d1,d0					; add random number between -16 and 15
-		move.w	d0,ost_plasma_x_target(a1)		; set x pos for plasma ball to stop
-		addq.w	#1,ost_plasma_count_top(a0)		; next plasma ball
+		add.w	d1,d0				; add random number between -16 and 15
+		move.w	d0,ost_plasma_x_target(a1)	; set x pos for plasma ball to stop
+		addq.w	#1,ost_plasma_count_top(a0)	; next plasma ball
 		move.w	ost_plasma_count_top(a0),ost_plasma_count_any(a0)
-		dbf	d2,@loop				; repeat sequence 3 more times
+		dbf	d2,@loop			; repeat sequence 3 more times
 
 	@skip_balls:
-		tst.w	ost_plasma_count_top(a0)			; are plasma balls still loaded?
-		bne.s	@update					; if yes, branch
-		addq.b	#2,ost_routine(a0)			; goto Plasma_Finish next
+		tst.w	ost_plasma_count_top(a0)	; are plasma balls still loaded?
+		bne.s	@update				; if yes, branch
+		addq.b	#2,ost_routine(a0)		; goto Plasma_Finish next
 
 	@update:
 		bra.w	Plasma_Update
@@ -145,9 +145,9 @@ Plasma_Finish:	; Routine 6
 		move.b	#id_ani_plaunch_whitesparking,ost_anim(a0)
 		tst.w	ost_plasma_count_any(a0)
 		bne.s	loc_1A97E
-		move.b	#id_Plasma_Generator,ost_routine(a0)	; goto Plasma_Generator next
-		movea.l	ost_plasma_parent(a0),a1		; address of OST of parent object (boss)
-		move.w	#-1,ost_fz_phase_state(a1)		; signal to boss that plasma phase is finished
+		move.b	#id_Plasma_Generator,ost_routine(a0) ; goto Plasma_Generator next
+		movea.l	ost_plasma_parent(a0),a1	; address of OST of parent object (boss)
+		move.w	#-1,ost_fz_phase_state(a1)	; signal to boss that plasma phase is finished
 
 loc_1A97E:
 		bra.w	Plasma_Update
@@ -172,54 +172,54 @@ Plasma_Spread:
 		move.w	ost_plasma_x_target(a0),d0
 		sub.w	ost_x_pos(a0),d0
 		asl.w	#4,d0
-		move.w	d0,ost_x_vel(a0)			; set speed so balls all arrive in position at the same time
-		move.w	#180,ost_subtype(a0)			; set timer to 3 seconds
-		addq.b	#2,ost_routine2(a0)			; goto Plasma_Drop next
+		move.w	d0,ost_x_vel(a0)		; set speed so balls all arrive in position at the same time
+		move.w	#180,ost_subtype(a0)		; set timer to 3 seconds
+		addq.b	#2,ost_routine2(a0)		; goto Plasma_Drop next
 		rts	
 ; ===========================================================================
 
 Plasma_Drop:
-		tst.w	ost_x_vel(a0)				; is plasma ball moving?
-		beq.s	@skip_stop				; if not, branch
-		jsr	(SpeedToPos).l				; update position
+		tst.w	ost_x_vel(a0)			; is plasma ball moving?
+		beq.s	@skip_stop			; if not, branch
+		jsr	(SpeedToPos).l			; update position
 		move.w	ost_x_pos(a0),d0
 		sub.w	ost_plasma_x_target(a0),d0
-		bcc.s	@skip_stop				; branch if plasma ball hasn't reached target x pos
-		clr.w	ost_x_vel(a0)				; stop moving
-		add.w	d0,ost_x_pos(a0)			; align to target
-		movea.l	ost_plasma_parent(a0),a1		; address of OST of parent object (launcher)
-		subq.w	#1,ost_plasma_count_top(a1)		; decrement count of plasma balls at top
+		bcc.s	@skip_stop			; branch if plasma ball hasn't reached target x pos
+		clr.w	ost_x_vel(a0)			; stop moving
+		add.w	d0,ost_x_pos(a0)		; align to target
+		movea.l	ost_plasma_parent(a0),a1	; address of OST of parent object (launcher)
+		subq.w	#1,ost_plasma_count_top(a1)	; decrement count of plasma balls at top
 
 	@skip_stop:
 		move.b	#id_ani_plasma_full,ost_anim(a0)
-		subq.w	#1,ost_subtype(a0)			; decrement timer
-		bne.s	@wait					; branch if not 0
-		addq.b	#2,ost_routine2(a0)			; goto Plasma_Move next
+		subq.w	#1,ost_subtype(a0)		; decrement timer
+		bne.s	@wait				; branch if not 0
+		addq.b	#2,ost_routine2(a0)		; goto Plasma_Move next
 		move.b	#id_ani_plasma_short,ost_anim(a0)
 		move.b	#id_col_12x12+id_col_hurt,ost_col_type(a0) ; make plasma ball harmful
 		move.w	#180,ost_subtype(a0)
 		moveq	#0,d0
 		move.w	(v_ost_player+ost_x_pos).w,d0
 		sub.w	ost_x_pos(a0),d0
-		move.w	d0,ost_x_vel(a0)			; move towards Sonic on x axis
-		move.w	#$140,ost_y_vel(a0)			; move downwards
+		move.w	d0,ost_x_vel(a0)		; move towards Sonic on x axis
+		move.w	#$140,ost_y_vel(a0)		; move downwards
 
 	@wait:
 		rts	
 ; ===========================================================================
 
 Plasma_Move:
-		jsr	(SpeedToPos).l				; update position
-		cmpi.w	#$5E0,ost_y_pos(a0)			; has plasma ball moved off screen?
-		bcc.s	@delete					; if yes, branch
-		subq.w	#1,ost_subtype(a0)			; decrement timer
-		beq.s	@delete					; branch if 0
+		jsr	(SpeedToPos).l			; update position
+		cmpi.w	#$5E0,ost_y_pos(a0)		; has plasma ball moved off screen?
+		bcc.s	@delete				; if yes, branch
+		subq.w	#1,ost_subtype(a0)		; decrement timer
+		beq.s	@delete				; branch if 0
 		rts	
 ; ===========================================================================
 
 @delete:
-		movea.l	ost_plasma_parent(a0),a1		; address of OST of parent object (launcher)
-		subq.w	#1,ost_plasma_count_any(a1)		; decrement count of plasma balls
+		movea.l	ost_plasma_parent(a0),a1	; address of OST of parent object (launcher)
+		subq.w	#1,ost_plasma_count_any(a1)	; decrement count of plasma balls
 		bra.w	Cyl_Delete
 
 ; ---------------------------------------------------------------------------

@@ -16,19 +16,19 @@ LGrass_Index:	index *,,2
 		ptr LGrass_Action
 
 LGrass_Data:	index *
-LGrass_Data_0:	ptr LGrass_Coll_Wide				; heightmap data
-		dc.b id_frame_grass_wide, $40			; frame number,	platform width
+LGrass_Data_0:	ptr LGrass_Coll_Wide			; heightmap data
+		dc.b id_frame_grass_wide, $40		; frame number,	platform width
 LGrass_Data_1:	ptr LGrass_Coll_Sloped
 		dc.b id_frame_grass_sloped, $40
 LGrass_Data_2:	ptr LGrass_Coll_Narrow
 		dc.b id_frame_grass_narrow, $20
 
-ost_grass_x_start:	equ $2A					; original x position (2 bytes)
-ost_grass_y_start:	equ $2C					; original y position (2 bytes)
-ost_grass_coll_ptr:	equ $30					; pointer to collision data (4 bytes)
-ost_grass_sink:		equ $34					; pixels the platform has sunk when stood on
-ost_grass_burn_flag:	equ $35					; 0 = not burning; 1 = burning
-ost_grass_children:	equ $36					; OST indices of child objects (8 bytes)
+ost_grass_x_start:	equ $2A				; original x position (2 bytes)
+ost_grass_y_start:	equ $2C				; original y position (2 bytes)
+ost_grass_coll_ptr:	equ $30				; pointer to collision data (4 bytes)
+ost_grass_sink:		equ $34				; pixels the platform has sunk when stood on
+ost_grass_burn_flag:	equ $35				; 0 = not burning; 1 = burning
+ost_grass_children:	equ $36				; OST indices of child objects (8 bytes)
 
 sizeof_grass_data:	equ LGrass_Data_1-LGrass_Data
 
@@ -53,25 +53,25 @@ LGrass_Main:	; Routine 0
 		moveq	#0,d0
 		move.b	ost_subtype(a0),d0
 		lsr.w	#2,d0
-		andi.w	#$1C,d0					; d0 = high nybble of subtype, multiplied by 4
+		andi.w	#$1C,d0				; d0 = high nybble of subtype, multiplied by 4
 		lea	LGrass_Data(pc,d0.w),a1
-		move.w	(a1)+,d0				; get pointer to heightmap data
+		move.w	(a1)+,d0			; get pointer to heightmap data
 		lea	LGrass_Data(pc,d0.w),a2
-		move.l	a2,ost_grass_coll_ptr(a0)		; get pointer to heightmap data again
+		move.l	a2,ost_grass_coll_ptr(a0)	; get pointer to heightmap data again
 		move.b	(a1)+,ost_frame(a0)
 		move.b	(a1),ost_actwidth(a0)
-		andi.b	#$F,ost_subtype(a0)			; clear high nybble of subtype
+		andi.b	#$F,ost_subtype(a0)		; clear high nybble of subtype
 
 LGrass_Action:	; Routine 2
 		bsr.w	LGrass_Types
-		tst.b	ost_solid(a0)				; is platform being stood on?
-		beq.s	LGrass_Solid				; if not, branch
+		tst.b	ost_solid(a0)			; is platform being stood on?
+		beq.s	LGrass_Solid			; if not, branch
 		moveq	#0,d1
 		move.b	ost_actwidth(a0),d1
 		addi.w	#$B,d1
-		bsr.w	ExitPlatform				; update flags if Sonic leaves plaform
-		btst	#status_platform_bit,ost_status(a1)	; is Sonic still on platform?
-		bne.w	LGrass_Slope				; if yes, branch
+		bsr.w	ExitPlatform			; update flags if Sonic leaves plaform
+		btst	#status_platform_bit,ost_status(a1) ; is Sonic still on platform?
+		bne.w	LGrass_Slope			; if yes, branch
 		clr.b	ost_solid(a0)
 		bra.s	LGrass_Display
 ; ===========================================================================
@@ -89,11 +89,11 @@ LGrass_Slope:
 LGrass_Solid:
 		moveq	#0,d1
 		move.b	ost_actwidth(a0),d1
-		addi.w	#$B,d1					; width
-		move.w	#$20,d2					; height
-		cmpi.b	#id_frame_grass_narrow,ost_frame(a0)	; is this a narrow platform?
-		bne.s	@not_narrow				; if not, branch
-		move.w	#$30,d2					; use larger height
+		addi.w	#$B,d1				; width
+		move.w	#$20,d2				; height
+		cmpi.b	#id_frame_grass_narrow,ost_frame(a0) ; is this a narrow platform?
+		bne.s	@not_narrow			; if not, branch
+		move.w	#$30,d2				; use larger height
 
 	@not_narrow:
 		movea.l	ost_grass_coll_ptr(a0),a2
@@ -109,8 +109,8 @@ LGrass_Display:
 
 LGrass_Types:
 		moveq	#0,d0
-		move.b	ost_subtype(a0),d0			; get subtype (high nybble was removed earlier)
-		andi.w	#7,d0					; read only bits 0-2
+		move.b	ost_subtype(a0),d0		; get subtype (high nybble was removed earlier)
+		andi.w	#7,d0				; read only bits 0-2
 		add.w	d0,d0
 		move.w	LGrass_TypeIndex(pc,d0.w),d1
 		jmp	LGrass_TypeIndex(pc,d1.w)
@@ -152,72 +152,72 @@ LGrass_Type03:
 ; ===========================================================================
 
 LGrass_Move:
-		btst	#3,ost_subtype(a0)			; is bit 3 of subtype set? (+8)
-		beq.s	@no_rev					; if not, branch
-		neg.w	d0					; reverse direction
+		btst	#3,ost_subtype(a0)		; is bit 3 of subtype set? (+8)
+		beq.s	@no_rev				; if not, branch
+		neg.w	d0				; reverse direction
 		add.w	d1,d0
 
 	@no_rev:
 		move.w	ost_grass_y_start(a0),d1
 		sub.w	d0,d1
-		move.w	d1,ost_y_pos(a0)			; update y position
+		move.w	d1,ost_y_pos(a0)		; update y position
 		rts	
 ; ===========================================================================
 
 ; Type 5 - sinks when stood on and catches fire
 LGrass_Type05:
-		move.b	ost_grass_sink(a0),d0			; get current sink distance
-		tst.b	ost_solid(a0)				; is platform being stood on?
-		bne.s	@stood_on				; if yes, branch
-		subq.b	#2,d0					; decrement sink distance
-		bcc.s	@update_sink				; branch if not < 0
-		moveq	#0,d0					; reset to 0
+		move.b	ost_grass_sink(a0),d0		; get current sink distance
+		tst.b	ost_solid(a0)			; is platform being stood on?
+		bne.s	@stood_on			; if yes, branch
+		subq.b	#2,d0				; decrement sink distance
+		bcc.s	@update_sink			; branch if not < 0
+		moveq	#0,d0				; reset to 0
 		bra.s	@update_sink
 ; ===========================================================================
 
 @stood_on:
-		addq.b	#4,d0					; add 4 to sink distance
-		cmpi.b	#$40,d0					; has it reached $40?
-		bcs.s	@update_sink				; if not, branch
-		move.b	#$40,d0					; max $40
+		addq.b	#4,d0				; add 4 to sink distance
+		cmpi.b	#$40,d0				; has it reached $40?
+		bcs.s	@update_sink			; if not, branch
+		move.b	#$40,d0				; max $40
 
 @update_sink:
-		move.b	d0,ost_grass_sink(a0)			; update sink distance
-		jsr	(CalcSine).l				; convert to sine
+		move.b	d0,ost_grass_sink(a0)		; update sink distance
+		jsr	(CalcSine).l			; convert to sine
 		lsr.w	#4,d0
 		move.w	d0,d1
 		add.w	ost_grass_y_start(a0),d0
-		move.w	d0,ost_y_pos(a0)			; update position
+		move.w	d0,ost_y_pos(a0)		; update position
 		cmpi.b	#$20,ost_grass_sink(a0)
-		bne.s	@skip_fire				; branch if not at $20
+		bne.s	@skip_fire			; branch if not at $20
 		tst.b	ost_grass_burn_flag(a0)
-		bne.s	@skip_fire				; branch if already burning
-		move.b	#1,ost_grass_burn_flag(a0)		; set burning flag
-		bsr.w	FindNextFreeObj				; find free OST slot
-		bne.s	@skip_fire				; branch if not found
+		bne.s	@skip_fire			; branch if already burning
+		move.b	#1,ost_grass_burn_flag(a0)	; set burning flag
+		bsr.w	FindNextFreeObj			; find free OST slot
+		bne.s	@skip_fire			; branch if not found
 
 		lea	LGrass_Settings2(pc),a2
 		bsr.w	SetupChild
 		addq.w	#5,ost_burn_y_start(a1)
-		subi.w	#$40,ost_x_pos(a1)			; start at left side of platform
+		subi.w	#$40,ost_x_pos(a1)		; start at left side of platform
 		movea.l	a0,a2
-		bsr.s	LGrass_AddChildToList			; save first flame OST index to list in parent OST
+		bsr.s	LGrass_AddChildToList		; save first flame OST index to list in parent OST
 
 	@skip_fire:
 		moveq	#0,d2
-		lea	ost_grass_children(a0),a2		; get address of child list
-		move.b	(a2)+,d2				; get quantity
+		lea	ost_grass_children(a0),a2	; get address of child list
+		move.b	(a2)+,d2			; get quantity
 		subq.b	#1,d2
-		bcs.s	@skip_fire_sink				; branch if 0
+		bcs.s	@skip_fire_sink			; branch if 0
 
 	@loop_fire_sink:
 		moveq	#0,d0
 		move.b	(a2)+,d0
 		lsl.w	#6,d0
-		addi.w	#v_ost_all&$FFFF,d0			; convert child OST index to address
+		addi.w	#v_ost_all&$FFFF,d0		; convert child OST index to address
 		movea.w	d0,a1
-		move.w	d1,ost_burn_sink(a1)			; copy parent sink distance to child
-		dbf	d2,@loop_fire_sink			; repeat for all children
+		move.w	d1,ost_burn_sink(a1)		; copy parent sink distance to child
+		dbf	d2,@loop_fire_sink		; repeat for all children
 
 	@skip_fire_sink:
 		rts	
@@ -231,26 +231,26 @@ LGrass_Type05:
 ; ---------------------------------------------------------------------------
 
 LGrass_AddChildToList:
-		lea	ost_grass_children(a2),a2		; load list of child objects
+		lea	ost_grass_children(a2),a2	; load list of child objects
 		moveq	#0,d0
-		move.b	(a2),d0					; get child count
-		addq.b	#1,(a2)					; increment child counter
-		lea	1(a2,d0.w),a2				; go to end of list
-		move.w	a1,d0					; get child OST address
+		move.b	(a2),d0				; get child count
+		addq.b	#1,(a2)				; increment child counter
+		lea	1(a2,d0.w),a2			; go to end of list
+		move.w	a1,d0				; get child OST address
 		subi.w	#v_ost_all&$FFFF,d0
 		lsr.w	#6,d0
-		andi.w	#$7F,d0					; d0 = OST index of child
-		move.b	d0,(a2)					; copy d0 to end of list
+		andi.w	#$7F,d0				; d0 = OST index of child
+		move.b	d0,(a2)				; copy d0 to end of list
 		rts	
 ; End of function LGrass_AddChildToList
 
 ; ===========================================================================
 
 LGrass_ChkDel:
-		tst.b	ost_grass_burn_flag(a0)			; is platform burning?
-		beq.s	@not_burning				; if not, branch
-		tst.b	ost_render(a0)				; is platform off screen?
-		bpl.s	LGrass_DelFlames			; if yes, branch
+		tst.b	ost_grass_burn_flag(a0)		; is platform burning?
+		beq.s	@not_burning			; if not, branch
+		tst.b	ost_render(a0)			; is platform off screen?
+		bpl.s	LGrass_DelFlames		; if yes, branch
 
 	@not_burning:
 		out_of_range	DeleteObject,ost_grass_x_start(a0)
@@ -259,21 +259,21 @@ LGrass_ChkDel:
 
 LGrass_DelFlames:
 		moveq	#0,d2
-		lea	ost_grass_children(a0),a2		; get child OST list
-		move.b	(a2),d2					; get quantity
-		clr.b	(a2)+					; clear quantity
+		lea	ost_grass_children(a0),a2	; get child OST list
+		move.b	(a2),d2				; get quantity
+		clr.b	(a2)+				; clear quantity
 		subq.b	#1,d2
-		bcs.s	@no_fire				; branch if 0
+		bcs.s	@no_fire			; branch if 0
 
 	@loop_del:
 		moveq	#0,d0
 		move.b	(a2),d0
 		clr.b	(a2)+
 		lsl.w	#6,d0
-		addi.w	#v_ost_all&$FFFF,d0			; convert child OST index to address
+		addi.w	#v_ost_all&$FFFF,d0		; convert child OST index to address
 		movea.w	d0,a1
-		bsr.w	DeleteChild				; delete child object
-		dbf	d2,@loop_del				; repeat for all children
+		bsr.w	DeleteChild			; delete child object
+		dbf	d2,@loop_del			; repeat for all children
 
 		move.b	#0,ost_grass_burn_flag(a0)
 		move.b	#0,ost_grass_sink(a0)

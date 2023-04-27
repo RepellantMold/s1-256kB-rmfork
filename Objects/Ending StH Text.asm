@@ -17,7 +17,7 @@ ESth_Index:	index *,,2
 		ptr ESth_Move
 		ptr ESth_GotoCredits
 
-ost_esth_wait_time:	equ $30					; time until exit (2 bytes)
+ost_esth_wait_time:	equ $30				; time until exit (2 bytes)
 
 EStH_Settings:	dc.b ost_routine,2
 		dc.b so_write_long,ost_x_pos
@@ -38,19 +38,19 @@ ESth_Main:	; Routine 0
 		jsr	SetupObject
 
 ESth_Move:	; Routine 2
-		cmpi.w	#$C0,ost_x_pos(a0)			; has object reached $C0?
-		beq.s	@at_target				; if yes, branch
-		addi.w	#$10,ost_x_pos(a0)			; move object to the right
+		cmpi.w	#$C0,ost_x_pos(a0)		; has object reached $C0?
+		beq.s	@at_target			; if yes, branch
+		addi.w	#$10,ost_x_pos(a0)		; move object to the right
 		rts
 
 @at_target:
-		addq.b	#2,ost_routine(a0)			; goto ESth_GotoCredits next
+		addq.b	#2,ost_routine(a0)		; goto ESth_GotoCredits next
 
 ESth_GotoCredits:
 		; Routine 4
-		subq.w	#1,ost_esth_wait_time(a0)		; subtract 1 from duration
-		bpl.s	@wait					; branch if time remains
-		move.b	#id_Credits,(v_gamemode).w		; exit to credits
+		subq.w	#1,ost_esth_wait_time(a0)	; subtract 1 from duration
+		bpl.s	@wait				; branch if time remains
+		move.b	#id_Credits,(v_gamemode).w	; exit to credits
 
 	@wait:
 		rts

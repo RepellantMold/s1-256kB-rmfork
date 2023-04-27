@@ -6,12 +6,12 @@ Map_Bri:	index *
 		ptr frame_bridge_stump
 		
 frame_bridge_log:
-		spritemap					; log
+		spritemap				; log
 		piece	-8, -8, 2x2, 0
 		endsprite
 		
 frame_bridge_stump:
-		spritemap					; stump & rope
+		spritemap				; stump & rope
 		piece	-$10, -8, 2x1, 4
 		piece	-$10, 0, 4x1, 6
 		endsprite

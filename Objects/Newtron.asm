@@ -16,7 +16,7 @@ Newt_Index:	index *,,2
 		ptr Newt_Action
 		ptr Newt_Delete
 
-ost_newtron_fire_flag:	equ $32					; set to 1 after newtron fires a missile
+ost_newtron_fire_flag:	equ $32				; set to 1 after newtron fires a missile
 
 Newt_Settings:	dc.b ost_routine,2
 		dc.b so_write_long,ost_mappings
@@ -42,7 +42,7 @@ Newt_Action:	; Routine 2
 		move.w	Newt_Action_Index(pc,d0.w),d1
 		jsr	Newt_Action_Index(pc,d1.w)
 		lea	(Ani_Newt).l,a1
-		bsr.w	AnimateSprite				; animate (green newtron goto Newt_Delete after firing)
+		bsr.w	AnimateSprite			; animate (green newtron goto Newt_Delete after firing)
 		bra.w	DespawnObject
 ; ===========================================================================
 Newt_Action_Index:
@@ -58,21 +58,21 @@ Newt_ChkDist:
 		bset	#status_xflip_bit,ost_status(a0)
 		move.w	(v_ost_player+ost_x_pos).w,d0
 		sub.w	ost_x_pos(a0),d0
-		bcc.s	@sonicisright				; branch if Sonic is to the right
-		neg.w	d0					; make d0 +ve
+		bcc.s	@sonicisright			; branch if Sonic is to the right
+		neg.w	d0				; make d0 +ve
 		bclr	#status_xflip_bit,ost_status(a0)
 
 	@sonicisright:
-		cmpi.w	#$80,d0					; is Sonic within $80 pixels of	the newtron?
-		bcc.s	@outofrange				; if not, branch
-		addq.b	#id_Newt_Type0,ost_routine2(a0)		; goto Newt_Type0 next
+		cmpi.w	#$80,d0				; is Sonic within $80 pixels of	the newtron?
+		bcc.s	@outofrange			; if not, branch
+		addq.b	#id_Newt_Type0,ost_routine2(a0)	; goto Newt_Type0 next
 		move.b	#id_ani_newt_drop,ost_anim(a0)
-		tst.b	ost_subtype(a0)				; check	object type
-		beq.s	@istype00				; if type is 00, branch
+		tst.b	ost_subtype(a0)			; check	object type
+		beq.s	@istype00			; if type is 00, branch
 
 		bset	#5,ost_tile(a0)
-		move.b	#id_Newt_Type1,ost_routine2(a0)		; goto Newt_Type1 next
-		move.b	#id_ani_newt_firing,ost_anim(a0)	; use different animation
+		move.b	#id_Newt_Type1,ost_routine2(a0)	; goto Newt_Type1 next
+		move.b	#id_ani_newt_firing,ost_anim(a0) ; use different animation
 
 	@outofrange:
 	@istype00:
@@ -80,40 +80,40 @@ Newt_ChkDist:
 ; ===========================================================================
 
 Newt_Type0:
-		cmpi.b	#id_frame_newt_drop2,ost_frame(a0)	; has "appearing" animation finished?
-		bcc.s	@fall					; is yes, branch
-		bset	#status_xflip_bit,ost_status(a0)	; face right
+		cmpi.b	#id_frame_newt_drop2,ost_frame(a0) ; has "appearing" animation finished?
+		bcc.s	@fall				; is yes, branch
+		bset	#status_xflip_bit,ost_status(a0) ; face right
 		move.w	(v_ost_player+ost_x_pos).w,d0
 		sub.w	ost_x_pos(a0),d0
-		bcc.s	@sonicisright2				; branch if Sonic is to the right
-		bclr	#status_xflip_bit,ost_status(a0)	; face left
+		bcc.s	@sonicisright2			; branch if Sonic is to the right
+		bclr	#status_xflip_bit,ost_status(a0) ; face left
 
 	@sonicisright2:
 		rts	
 ; ===========================================================================
 
 @fall:
-		cmpi.b	#id_frame_newt_norm,ost_frame(a0)	; is fully visible upright frame used?
-		bne.s	@not_upright				; if not, branch
+		cmpi.b	#id_frame_newt_norm,ost_frame(a0) ; is fully visible upright frame used?
+		bne.s	@not_upright			; if not, branch
 		move.b	#id_col_20x16,ost_col_type(a0)
 
 	@not_upright:
-		bsr.w	ObjectFall				; apply gravity and update position
+		bsr.w	ObjectFall			; apply gravity and update position
 		bsr.w	FindFloorObj
-		tst.w	d1					; has newtron hit the floor?
-		bpl.s	@keepfalling				; if not, branch
+		tst.w	d1				; has newtron hit the floor?
+		bpl.s	@keepfalling			; if not, branch
 
-		add.w	d1,ost_y_pos(a0)			; align to floor
-		move.w	#0,ost_y_vel(a0)			; stop newtron falling
-		addq.b	#2,ost_routine2(a0)			; goto Newt_Type0_Floor next
+		add.w	d1,ost_y_pos(a0)		; align to floor
+		move.w	#0,ost_y_vel(a0)		; stop newtron falling
+		addq.b	#2,ost_routine2(a0)		; goto Newt_Type0_Floor next
 		move.b	#id_ani_newt_fly1,ost_anim(a0)
-		btst	#tile_pal12_bit,ost_tile(a0)		; is newtron blue?
-		beq.s	@is_blue				; if yes, branch
-		addq.b	#1,ost_anim(a0)				; use different animation for green newtron
+		btst	#tile_pal12_bit,ost_tile(a0)	; is newtron blue?
+		beq.s	@is_blue			; if yes, branch
+		addq.b	#1,ost_anim(a0)			; use different animation for green newtron
 
 	@is_blue:
 		move.b	#id_col_20x8,ost_col_type(a0)
-		move.w	#$200,ost_x_vel(a0)			; move newtron horizontally
+		move.w	#$200,ost_x_vel(a0)		; move newtron horizontally
 		btst	#status_xflip_bit,ost_status(a0)
 		bne.s	@noflip
 		neg.w	ost_x_vel(a0)
@@ -124,23 +124,23 @@ Newt_Type0:
 ; ===========================================================================
 
 Newt_Type0_Floor:
-		bsr.w	SpeedToPos				; update position
+		bsr.w	SpeedToPos			; update position
 		bsr.w	FindFloorObj
 		cmpi.w	#-8,d1
-		blt.s	@nextroutine				; branch if more than 8px below floor
+		blt.s	@nextroutine			; branch if more than 8px below floor
 		cmpi.w	#$C,d1
-		bge.s	@nextroutine				; branch if more than 11px above floor (also detects a ledge)
-		add.w	d1,ost_y_pos(a0)			; align to floor
+		bge.s	@nextroutine			; branch if more than 11px above floor (also detects a ledge)
+		add.w	d1,ost_y_pos(a0)		; align to floor
 		rts	
 ; ===========================================================================
 
 	@nextroutine:
-		addq.b	#2,ost_routine2(a0)			; goto Newt_Type0_Fly next
+		addq.b	#2,ost_routine2(a0)		; goto Newt_Type0_Fly next
 		rts	
 ; ===========================================================================
 
 Newt_Type0_Fly:
-		bsr.w	SpeedToPos				; update position (flies straight)
+		bsr.w	SpeedToPos			; update position (flies straight)
 		rts	
 ; ===========================================================================
 Newt_Settings2:	dc.b ost_id,id_Missile
@@ -161,22 +161,22 @@ Newt_Type1:
 		move.b	#id_col_20x16,ost_col_type(a0)
 
 	@firemissile:
-		cmpi.b	#id_frame_newt_firing,ost_frame(a0)	; is animation on firing frame?
-		bne.s	@fail					; if not, branch
-		tst.b	ost_newtron_fire_flag(a0)		; has newtron already fired?
-		bne.s	@fail					; if yes, branch
+		cmpi.b	#id_frame_newt_firing,ost_frame(a0) ; is animation on firing frame?
+		bne.s	@fail				; if not, branch
+		tst.b	ost_newtron_fire_flag(a0)	; has newtron already fired?
+		bne.s	@fail				; if yes, branch
 
-		move.b	#1,ost_newtron_fire_flag(a0)		; set fired flag
-		bsr.w	FindFreeObj				; find free OST slot
-		bne.s	@fail					; branch if not found
+		move.b	#1,ost_newtron_fire_flag(a0)	; set fired flag
+		bsr.w	FindFreeObj			; find free OST slot
+		bne.s	@fail				; branch if not found
 		lea	Newt_Settings2(pc),a2
 		bsr.w	SetupChild
 		subq.w	#8,ost_y_pos(a1)
 		move.w	#$14,d0
-		btst	#status_xflip_bit,ost_status(a0)	; is newtron facing right?
-		bne.s	@noflip					; if yes, branch
+		btst	#status_xflip_bit,ost_status(a0) ; is newtron facing right?
+		bne.s	@noflip				; if yes, branch
 		neg.w	d0
-		neg.w	ost_x_vel(a1)				; missile goes left
+		neg.w	ost_x_vel(a1)			; missile goes left
 
 	@noflip:
 		add.w	d0,ost_x_pos(a1)

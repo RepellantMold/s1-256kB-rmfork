@@ -26,18 +26,18 @@ Ring_Index:	index *,,2
 		ptr Ring_Delete
 
 		; x, y
-Ring_Spacing:	dc.b $10, 0					; horizontal tight
-		dc.b $18, 0					; horizontal normal
-		dc.b $20, 0					; horizontal wide
-		dc.b 0,	$10					; vertical tight
-		dc.b 0,	$18					; vertical normal
-		dc.b 0,	$20					; vertical wide
-		dc.b $10, $10					; diagonal
+Ring_Spacing:	dc.b $10, 0				; horizontal tight
+		dc.b $18, 0				; horizontal normal
+		dc.b $20, 0				; horizontal wide
+		dc.b 0,	$10				; vertical tight
+		dc.b 0,	$18				; vertical normal
+		dc.b 0,	$20				; vertical wide
+		dc.b $10, $10				; diagonal
 		dc.b $F0, $10
 		dc.b $20, $20
 
-ost_ring_x_main:	equ $32					; x position of primary ring (2 bytes)
-ost_ring_num:		equ $34					; which ring in the group of 1-7 rings it is
+ost_ring_x_main:	equ $32				; x position of primary ring (2 bytes)
+ost_ring_num:		equ $34				; which ring in the group of 1-7 rings it is
 
 Ring_Settings:	dc.b ost_id,id_Rings
 		dc.b ost_routine,2
@@ -59,82 +59,82 @@ Ring_Main:	; Routine 0
 		moveq	#0,d0
 		move.b	ost_respawn(a0),d0
 		lea	2(a2,d0.w),a2
-		move.b	(a2),d4					; d4 = byte from respawn memory
+		move.b	(a2),d4				; d4 = byte from respawn memory
 		move.b	ost_subtype(a0),d1
 		move.b	d1,d0
-		andi.w	#7,d1					; read bits 0-2 of subtype (ring quantity minus 1)
-		cmpi.w	#7,d1					; is subtype = 7 ?
-		bne.s	@not_7					; if not, branch
-		moveq	#6,d1					; max 6
+		andi.w	#7,d1				; read bits 0-2 of subtype (ring quantity minus 1)
+		cmpi.w	#7,d1				; is subtype = 7 ?
+		bne.s	@not_7				; if not, branch
+		moveq	#6,d1				; max 6
 
 	@not_7:
-		swap	d1					; move into high word
-		move.w	#0,d1					; clear low word
-		lsr.b	#4,d0					; read high nybble of subtype
-		add.w	d0,d0					; d0 = ring spacing index (0-$F *2)
-		move.b	Ring_Spacing(pc,d0.w),d5		; load x spacing data
+		swap	d1				; move into high word
+		move.w	#0,d1				; clear low word
+		lsr.b	#4,d0				; read high nybble of subtype
+		add.w	d0,d0				; d0 = ring spacing index (0-$F *2)
+		move.b	Ring_Spacing(pc,d0.w),d5	; load x spacing data
 		ext.w	d5
-		move.b	Ring_Spacing+1(pc,d0.w),d6		; load y spacing data
+		move.b	Ring_Spacing+1(pc,d0.w),d6	; load y spacing data
 		ext.w	d6
-		movea.l	a0,a1					; current object will be first ring
+		movea.l	a0,a1				; current object will be first ring
 		move.w	ost_x_pos(a0),d2
 		move.w	ost_y_pos(a0),d3
-		lsr.b	#1,d4					; has first ring been collected previously?
-		bcs.s	@skip_ring				; if yes, branch
+		lsr.b	#1,d4				; has first ring been collected previously?
+		bcs.s	@skip_ring			; if yes, branch
 		bclr	#7,(a2)
 		bra.s	@load_first
 ; ===========================================================================
 
 @loop:
-		swap	d1					; swap ring counter & loop counter
-		lsr.b	#1,d4					; has this ring been collected previously?
-		bcs.s	@skip_ring				; if yes, branch
+		swap	d1				; swap ring counter & loop counter
+		lsr.b	#1,d4				; has this ring been collected previously?
+		bcs.s	@skip_ring			; if yes, branch
 		bclr	#7,(a2)
-		bsr.w	FindFreeObj				; find free OST slot
-		bne.s	@fail					; branch if not found
+		bsr.w	FindFreeObj			; find free OST slot
+		bne.s	@fail				; branch if not found
 
 @load_first:
 		move.l	d1,-(sp)
 		lea	Ring_Settings(pc),a2
 		bsr.w	SetupChild
 		move.l	(sp)+,d1
-		move.w	d2,ost_x_pos(a1)			; set x position based on d2
+		move.w	d2,ost_x_pos(a1)		; set x position based on d2
 		move.w	ost_x_pos(a0),ost_ring_x_main(a1)
-		move.w	d3,ost_y_pos(a1)			; set y position based on d3
-		move.b	d1,ost_ring_num(a1)			; ring remembers which one in the current batch it is 
+		move.w	d3,ost_y_pos(a1)		; set y position based on d3
+		move.b	d1,ost_ring_num(a1)		; ring remembers which one in the current batch it is 
 
 @skip_ring:
-		addq.w	#1,d1					; increment ring counter
-		add.w	d5,d2					; add x spacing value to d2
-		add.w	d6,d3					; add y spacing value to d3
-		swap	d1					; swap ring counter & loop counter
-		dbf	d1,@loop				; repeat for number of rings
+		addq.w	#1,d1				; increment ring counter
+		add.w	d5,d2				; add x spacing value to d2
+		add.w	d6,d3				; add y spacing value to d3
+		swap	d1				; swap ring counter & loop counter
+		dbf	d1,@loop			; repeat for number of rings
 
 @fail:
 		btst	#0,(a2)
 		bne.w	DeleteObject
 
 Ring_Animate:	; Routine 2
-		move.b	(v_syncani_1_frame).w,ost_frame(a0)	; set synchronised frame
+		move.b	(v_syncani_1_frame).w,ost_frame(a0) ; set synchronised frame
 		bsr.w	DisplaySprite
 		out_of_range.s	Ring_Delete,ost_ring_x_main(a0)
 		rts	
 ; ===========================================================================
 
 Ring_Collect:	; Routine 4
-		addq.b	#2,ost_routine(a0)			; goto Ring_Sparkle next
+		addq.b	#2,ost_routine(a0)		; goto Ring_Sparkle next
 		move.b	#0,ost_col_type(a0)
 		move.b	#1,ost_priority(a0)
-		bsr.w	CollectRing				; add ring/extra life, play sound
+		bsr.w	CollectRing			; add ring/extra life, play sound
 		lea	(v_respawn_list).w,a2
 		moveq	#0,d0
 		move.b	ost_respawn(a0),d0
-		move.b	ost_ring_num(a0),d1			; which ring is collected
-		bset	d1,2(a2,d0.w)				; set bit in respawn memory
+		move.b	ost_ring_num(a0),d1		; which ring is collected
+		bset	d1,2(a2,d0.w)			; set bit in respawn memory
 
 Ring_Sparkle:	; Routine 6
 		lea	(Ani_Ring).l,a1
-		bsr.w	AnimateSprite				; animate and goto Ring_Delete when finished
+		bsr.w	AnimateSprite			; animate and goto Ring_Delete when finished
 		bra.w	DisplaySprite
 ; ===========================================================================
 

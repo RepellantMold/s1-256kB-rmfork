@@ -19,16 +19,16 @@
 
 Swing_Solid:
 		lea	(v_ost_player).w,a1
-		tst.w	ost_y_vel(a1)				; is Sonic moving up/jumping?
-		bmi.w	Plat_Exit				; if yes, branch
+		tst.w	ost_y_vel(a1)			; is Sonic moving up/jumping?
+		bmi.w	Plat_Exit			; if yes, branch
 
 		move.w	ost_x_pos(a1),d0
 		sub.w	ost_x_pos(a0),d0
 		add.w	d1,d0
-		bmi.w	Plat_Exit				; branch if Sonic is left of the platform
+		bmi.w	Plat_Exit			; branch if Sonic is left of the platform
 		add.w	d1,d1
 		cmp.w	d1,d0
-		bhs.w	Plat_Exit				; branch if Sonic is right of the platform
+		bhs.w	Plat_Exit			; branch if Sonic is right of the platform
 		move.w	ost_y_pos(a0),d0
 		sub.w	d3,d0
 		bra.w	Plat_NoXCheck_AltY
@@ -51,9 +51,9 @@ Swing_Index:	index *,,2
 		ptr Swing_Display
 		ptr Swing_Action
 
-ost_swing_y_start:	equ $38					; original y-axis position (2 bytes)
-ost_swing_x_start:	equ $3A					; original x-axis position (2 bytes)
-ost_swing_radius:	equ $3C					; distance of chainlink from anchor
+ost_swing_y_start:	equ $38				; original y-axis position (2 bytes)
+ost_swing_x_start:	equ $3A				; original x-axis position (2 bytes)
+ost_swing_radius:	equ $3C				; distance of chainlink from anchor
 
 Swing_Settings:	dc.b ost_routine,2
 		dc.b so_write_long,ost_mappings
@@ -102,14 +102,14 @@ Swing_Setupbra:	bra.w	SetupObject
 Swing_Main:	; Routine 0
 		lea	Swing_Settings(pc),a2
 		bsr.s	Swing_Setupbra
-		cmpi.b	#id_SLZ,(v_zone).w			; check if level is SLZ
+		cmpi.b	#id_SLZ,(v_zone).w		; check if level is SLZ
 		bne.s	@notSLZ
 
 		lea	SwSLZ_Settings(pc),a2
 		bsr.s	Swing_Setupbra
 
 	@notSLZ:
-		cmpi.b	#id_SBZ,(v_zone).w			; check if level is SBZ
+		cmpi.b	#id_SBZ,(v_zone).w		; check if level is SBZ
 		bne.s	@length
 
 		lea	SwSBZ_Settings(pc),a2
@@ -118,14 +118,14 @@ Swing_Main:	; Routine 0
 @length:
 		move.b	ost_id(a0),d4
 		moveq	#0,d2
-		lea	ost_subtype(a0),a3			; (a3) = chain length, followed by child OST indices
-		move.b	(a3),d2					; d2 = chain length
-		andi.w	#$F,d2					; max length is 15
-		move.b	#0,(a3)+				; clear subtype
+		lea	ost_subtype(a0),a3		; (a3) = chain length, followed by child OST indices
+		move.b	(a3),d2				; d2 = chain length
+		andi.w	#$F,d2				; max length is 15
+		move.b	#0,(a3)+			; clear subtype
 		move.w	d2,d3
-		lsl.w	#4,d3					; d3 = chain length in pixels
+		lsl.w	#4,d3				; d3 = chain length in pixels
 		addq.b	#8,d3
-		move.b	d3,ost_swing_radius(a0)			; relative position of parent (the platform itself)
+		move.b	d3,ost_swing_radius(a0)		; relative position of parent (the platform itself)
 		subq.b	#8,d3
 		tst.b	ost_frame(a0)
 		beq.s	@makechain
@@ -133,46 +133,46 @@ Swing_Main:	; Routine 0
 		subq.w	#1,d2
 
 @makechain:
-		bsr.w	FindFreeObj				; find free OST slot
-		bne.s	@fail					; branch if not found
+		bsr.w	FindFreeObj			; find free OST slot
+		bne.s	@fail				; branch if not found
 		addq.b	#1,ost_subtype(a0)
 		move.w	a1,d5
 		subi.w	#v_ost_all&$FFFF,d5
 		lsr.w	#6,d5
-		andi.w	#$7F,d5					; convert child OST address to index
-		move.b	d5,(a3)+				; save child OST index to byte list in parent OST
+		andi.w	#$7F,d5				; convert child OST address to index
+		move.b	d5,(a3)+			; save child OST index to byte list in parent OST
 		lea	Swing_Settings2(pc),a2
 		bsr.w	SetupChild
-		move.b	d4,ost_id(a1)				; load swinging	object
+		move.b	d4,ost_id(a1)			; load swinging	object
 		bclr	#tile_pal34_bit,ost_tile(a1)
-		move.b	d3,ost_swing_radius(a1)			; radius is smaller for chainlinks closer to top
-		subi.b	#$10,d3					; each one is 16px higher
-		bcc.s	@notanchor				; branch if not the highest link
-		move.b	#id_frame_swing_anchor,ost_frame(a1)	; use anchor sprite
+		move.b	d3,ost_swing_radius(a1)		; radius is smaller for chainlinks closer to top
+		subi.b	#$10,d3				; each one is 16px higher
+		bcc.s	@notanchor			; branch if not the highest link
+		move.b	#id_frame_swing_anchor,ost_frame(a1) ; use anchor sprite
 		move.b	#3,ost_priority(a1)
 		bset	#tile_pal34_bit,ost_tile(a1)
 
 	@notanchor:
-		dbf	d2,@makechain				; repeat d2 times (chain length)
+		dbf	d2,@makechain			; repeat d2 times (chain length)
 
 	@fail:
-		move.w	a0,d5					; get parent OST address
+		move.w	a0,d5				; get parent OST address
 		subi.w	#v_ost_all&$FFFF,d5
 		lsr.w	#6,d5
-		andi.w	#$7F,d5					; convert to index
-		move.b	d5,(a3)+				; save to end of child OST list
-		cmpi.b	#id_SBZ,(v_zone).w			; is zone SBZ?
-		beq.s	Swing_Action				; if yes, branch
+		andi.w	#$7F,d5				; convert to index
+		move.b	d5,(a3)+			; save to end of child OST list
+		cmpi.b	#id_SBZ,(v_zone).w		; is zone SBZ?
+		beq.s	Swing_Action			; if yes, branch
 
 Swing_SetSolid:	; Routine 2
 		moveq	#0,d1
 		move.b	ost_actwidth(a0),d1
 		moveq	#0,d3
 		move.b	ost_height(a0),d3
-		bsr.w	Swing_Solid				; detect collision with Sonic, goto Swing_Action2 in that case
+		bsr.w	Swing_Solid			; detect collision with Sonic, goto Swing_Action2 in that case
 
 Swing_Action:	; Routine $C
-		bsr.w	Swing_Move				; update positions of chainlinks and platform
+		bsr.w	Swing_Move			; update positions of chainlinks and platform
 		bra.s	Swing_Action2_sub
 ; ===========================================================================
 
@@ -181,7 +181,7 @@ Swing_Action2:	; Routine 4
 		move.b	ost_actwidth(a0),d1
 		bsr.w	ExitPlatform
 		move.w	ost_x_pos(a0),-(sp)
-		bsr.w	Swing_Move				; update positions of chainlinks and platform
+		bsr.w	Swing_Move			; update positions of chainlinks and platform
 		move.w	(sp)+,d2
 		moveq	#0,d3
 		move.b	ost_height(a0),d3
@@ -210,8 +210,8 @@ Swing_Move:
 		move.w	#$80,d1
 		btst	#status_xflip_bit,ost_status(a0)
 		beq.s	@no_xflip
-		neg.w	d0					; invert if xflipped
-		add.w	d1,d0					; d0 = oscillating value, same for all platforms
+		neg.w	d0				; invert if xflipped
+		add.w	d1,d0				; d0 = oscillating value, same for all platforms
 
 	@no_xflip:
 		bra.s	Swing_MoveAll
@@ -234,21 +234,21 @@ include_SwingingPlatform_3:	macro
 ; ---------------------------------------------------------------------------
 
 Swing_MoveAll:
-		bsr.w	CalcSine				; convert d0 to sine
+		bsr.w	CalcSine			; convert d0 to sine
 		move.w	ost_swing_y_start(a0),d2
 		move.w	ost_swing_x_start(a0),d3
-		lea	ost_subtype(a0),a2			; (a2) = chain length, followed by child OST index list
+		lea	ost_subtype(a0),a2		; (a2) = chain length, followed by child OST index list
 		moveq	#0,d6
-		move.b	(a2)+,d6				; get chain length
+		move.b	(a2)+,d6			; get chain length
 
 	@loop:
 		moveq	#0,d4
-		move.b	(a2)+,d4				; get child OST index
+		move.b	(a2)+,d4			; get child OST index
 		lsl.w	#6,d4
-		addi.l	#v_ost_all&$FFFFFF,d4			; convert to RAM address
+		addi.l	#v_ost_all&$FFFFFF,d4		; convert to RAM address
 		movea.l	d4,a1
 		moveq	#0,d4
-		move.b	ost_swing_radius(a1),d4			; get distance of object from anchor
+		move.b	ost_swing_radius(a1),d4		; get distance of object from anchor
 		move.l	d4,d5
 		muls.w	d0,d4
 		asr.l	#8,d4
@@ -256,9 +256,9 @@ Swing_MoveAll:
 		asr.l	#8,d5
 		add.w	d2,d4
 		add.w	d3,d5
-		move.w	d4,ost_y_pos(a1)			; update position
+		move.w	d4,ost_y_pos(a1)		; update position
 		move.w	d5,ost_x_pos(a1)
-		dbf	d6,@loop				; repeat for all chainlinks and platform
+		dbf	d6,@loop			; repeat for all chainlinks and platform
 		rts	
 ; End of function Swing_MoveAll
 
@@ -281,7 +281,7 @@ Swing_DelAll:
 		addi.l	#v_ost_all&$FFFFFF,d0
 		movea.l	d0,a1
 		bsr.w	DeleteChild
-		dbf	d2,@loop				; repeat for length of chain
+		dbf	d2,@loop			; repeat for length of chain
 		rts	
 ; ===========================================================================
 

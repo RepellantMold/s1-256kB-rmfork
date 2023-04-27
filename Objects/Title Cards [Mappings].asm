@@ -16,7 +16,7 @@ Map_Card:	index *
 		ptr frame_card_fz
 		
 frame_card_ghz:
-		spritemap					; GREEN HILL
+		spritemap				; GREEN HILL
 		piece -$4C, -8, 2x2, $18
 		piece -$3C, -8, 2x2, $3A
 		piece -$2C, -8, 2x2, $10
@@ -29,7 +29,7 @@ frame_card_ghz:
 		endsprite
 		
 frame_card_lz:
-		spritemap					; LABYRINTH
+		spritemap				; LABYRINTH
 		piece -$44, -8, 2x2, $26
 		piece -$34, -8, 2x2, 0
 		piece -$24, -8, 2x2, 4
@@ -42,7 +42,7 @@ frame_card_lz:
 		endsprite
 		
 frame_card_mz:
-		spritemap					; MARBLE
+		spritemap				; MARBLE
 		piece -$31, -8, 2x2, $2A
 		piece -$20, -8, 2x2, 0
 		piece -$10, -8, 2x2, $3A
@@ -52,7 +52,7 @@ frame_card_mz:
 		endsprite
 		
 frame_card_slz:
-		spritemap					; STAR LIGHT
+		spritemap				; STAR LIGHT
 		piece -$4C, -8, 2x2, $3E
 		piece -$3C, -8, 2x2, $42
 		piece -$2C, -8, 2x2, 0
@@ -65,7 +65,7 @@ frame_card_slz:
 		endsprite
 		
 frame_card_syz:
-		spritemap					; SPRING YARD
+		spritemap				; SPRING YARD
 		piece -$54, -8, 2x2, $3E
 		piece -$44, -8, 2x2, $36
 		piece -$34, -8, 2x2, $3A
@@ -79,7 +79,7 @@ frame_card_syz:
 		endsprite
 		
 frame_card_sbz:
-		spritemap					; SCRAP BRAIN
+		spritemap				; SCRAP BRAIN
 		piece -$54, -8, 2x2, $3E
 		piece -$44, -8, 2x2, 8
 		piece -$34, -8, 2x2, $3A
@@ -93,7 +93,7 @@ frame_card_sbz:
 		endsprite
 		
 frame_card_zone:
-		spritemap					; ZONE
+		spritemap				; ZONE
 		piece -$20, -8, 2x2, $22
 		piece -$10, -8, 2x2, $32
 		piece 0, -8, 2x2, $2E
@@ -101,25 +101,25 @@ frame_card_zone:
 		endsprite
 		
 frame_card_act1:
-		spritemap					; ACT 1
+		spritemap				; ACT 1
 		piece -$14, 4, 3x1, $4E
 		piece $C, -$C, 1x3, $57
 		endsprite
 		
 frame_card_act2:
-		spritemap					; ACT 2
+		spritemap				; ACT 2
 		piece -$14, 4, 3x1, $4E
 		piece 8, -$C, 2x3, $5A
 		endsprite
 		
 frame_card_act3:
-		spritemap					; ACT 3
+		spritemap				; ACT 3
 		piece -$14, 4, 3x1, $4E
 		piece 8, -$C, 2x3, $51
 		endsprite
 		
 frame_card_oval:
-		spritemap					; Oval
+		spritemap				; Oval
 		piece -$C, -$1C, 4x1, $6A
 		piece $14, -$1C, 1x3, $6E
 		piece -$14, -$14, 2x1, $71
@@ -136,7 +136,7 @@ frame_card_oval:
 		endsprite
 		
 frame_card_fz:
-		spritemap					; FINAL
+		spritemap				; FINAL
 		piece -$24, -8, 2x2, $14
 		piece -$14, -8, 1x2, $20
 		piece -$C, -8, 2x2, $2E

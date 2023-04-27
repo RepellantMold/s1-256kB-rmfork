@@ -33,7 +33,7 @@ CSI_Settings:	dc.b ost_routine,2
 CSI_Main:	; Routine 0
 		lea	CSI_Settings(pc),a2
 		jsr	SetupObject
-		move.w	#0,(v_rings).w				; clear rings
+		move.w	#0,(v_rings).w			; clear rings
 
 CSI_Display:	; Routine 2
 		jmp	(DisplaySprite).l
@@ -52,15 +52,15 @@ CSI_MakeMiniSonic:
 		subq.b	#2,d4
 		bcc.s	CSI_more_than_1
 CSI_Delete:
-		jmp	(DeleteObject).l			; cancel if you have 0-1 continues
+		jmp	(DeleteObject).l		; cancel if you have 0-1 continues
 
 	CSI_more_than_1:
 		moveq	#1,d3
-		cmpi.b	#14,d4					; do you have fewer than 16 continues
-		bcs.s	@fewer_than_16				; if yes, branch
+		cmpi.b	#14,d4				; do you have fewer than 16 continues
+		bcs.s	@fewer_than_16			; if yes, branch
 
 		moveq	#0,d3
-		moveq	#14,d4					; cap at 15 mini-Sonics
+		moveq	#14,d4				; cap at 15 mini-Sonics
 
 	@fewer_than_16:
 		move.b	d4,d2
@@ -69,35 +69,35 @@ CSI_Delete:
 CSI_MiniSonicLoop:
 		lea	CSI_Settings2(pc),a2
 		jsr	SetupChild
-		move.w	(a3)+,ost_x_pos(a1)			; use above data for x-axis position
-		tst.b	d2					; do you have an even number of continues?
-		beq.s	@is_even				; if yes, branch
-		subi.w	#$A,ost_x_pos(a1)			; shift mini-Sonics slightly to the right
+		move.w	(a3)+,ost_x_pos(a1)		; use above data for x-axis position
+		tst.b	d2				; do you have an even number of continues?
+		beq.s	@is_even			; if yes, branch
+		subi.w	#$A,ost_x_pos(a1)		; shift mini-Sonics slightly to the right
 
 	@is_even:
 		lea	$40(a1),a1
-		dbf	d4,CSI_MiniSonicLoop			; repeat for number of continues
+		dbf	d4,CSI_MiniSonicLoop		; repeat for number of continues
 
 		lea	-$40(a1),a1
 		move.b	d3,ost_subtype(a1)
 
 CSI_ChkDel:	; Routine 6
-		tst.b	ost_subtype(a0)				; do you have 16 or more continues?
-		beq.s	CSI_Animate				; if yes, branch
+		tst.b	ost_subtype(a0)			; do you have 16 or more continues?
+		beq.s	CSI_Animate			; if yes, branch
 		cmpi.b	#id_CSon_Run,(v_ost_player+ost_routine).w ; is Sonic running?
-		bcs.s	CSI_Animate				; if not, branch
+		bcs.s	CSI_Animate			; if not, branch
 		move.b	(v_vblank_counter_byte).w,d0
 		andi.b	#1,d0
 		bne.s	CSI_Animate
-		tst.w	(v_ost_player+ost_x_vel).w		; is Sonic running?
-		bne.s	CSI_Delete				; if yes, goto delete
+		tst.w	(v_ost_player+ost_x_vel).w	; is Sonic running?
+		bne.s	CSI_Delete			; if yes, goto delete
 		rts	
 
 CSI_Animate:
 		move.b	(v_vblank_counter_byte).w,d0
 		andi.b	#$F,d0
 		bne.s	@no_frame_chg
-		bchg	#0,ost_frame(a0)			; animate every 16 frames
+		bchg	#0,ost_frame(a0)		; animate every 16 frames
 
 	@no_frame_chg:
 		jmp	(DisplaySprite).l

@@ -35,8 +35,8 @@ Poi_Main:	; Routine 0
 		bsr.w	SetupObject
 
 Poi_Slower:	; Routine 2
-		tst.w	ost_y_vel(a0)				; is object moving?
-		bpl.w	DeleteObject				; if not, delete
-		bsr.w	SpeedToPos				; update position
-		addi.w	#$18,ost_y_vel(a0)			; reduce object speed
+		tst.w	ost_y_vel(a0)			; is object moving?
+		bpl.w	DeleteObject			; if not, delete
+		bsr.w	SpeedToPos			; update position
+		addi.w	#$18,ost_y_vel(a0)		; reduce object speed
 		rts	

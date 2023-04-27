@@ -9,28 +9,28 @@
 ; ---------------------------------------------------------------------------
 
 Yad_ChkWall:
-		move.w	(v_frame_counter).w,d0			; get word that increments every frame
-		add.w	d7,d0					; add OST id (so that multiple yadrins don't do wall check on the same frame)
-		andi.w	#3,d0					; read only bits 0-1
-		bne.s	@no_collision				; branch if either are set
+		move.w	(v_frame_counter).w,d0		; get word that increments every frame
+		add.w	d7,d0				; add OST id (so that multiple yadrins don't do wall check on the same frame)
+		andi.w	#3,d0				; read only bits 0-1
+		bne.s	@no_collision			; branch if either are set
 		moveq	#0,d3
 		move.b	ost_actwidth(a0),d3
-		tst.w	ost_x_vel(a0)				; is yadrin moving to the left?
-		bmi.s	@moving_left				; if yes, branch
+		tst.w	ost_x_vel(a0)			; is yadrin moving to the left?
+		bmi.s	@moving_left			; if yes, branch
 		bsr.w	FindWallRightObj
-		tst.w	d1					; has yadrin hit wall to the right?
-		bpl.s	@no_collision				; if not, branch
+		tst.w	d1				; has yadrin hit wall to the right?
+		bpl.s	@no_collision			; if not, branch
 
 @collision:
-		moveq	#1,d0					; set collision flag
+		moveq	#1,d0				; set collision flag
 		rts	
 ; ===========================================================================
 
 @moving_left:
-		not.w	d3					; flip width
+		not.w	d3				; flip width
 		bsr.w	FindWallLeftObj
-		tst.w	d1					; has yadrin hit wall to the left?
-		bmi.s	@collision				; if yes, branch
+		tst.w	d1				; has yadrin hit wall to the left?
+		bmi.s	@collision			; if yes, branch
 
 @no_collision:
 		moveq	#0,d0
@@ -54,7 +54,7 @@ Yad_Index:	index *,,2
 		ptr Yad_Main
 		ptr Yad_Action
 
-ost_yadrin_wait_time:	equ $30					; time to wait before changing direction (2 bytes)
+ost_yadrin_wait_time:	equ $30				; time to wait before changing direction (2 bytes)
 
 Yad_Settings:	dc.b so_write_long,ost_mappings
 		dc.l Map_Yad
@@ -73,13 +73,13 @@ Yad_Settings:	dc.b so_write_long,ost_mappings
 Yad_Main:	; Routine 0
 		lea	Yad_Settings(pc),a2
 		bsr.w	SetupObject
-		bsr.w	ObjectFall				; apply gravity & update position
+		bsr.w	ObjectFall			; apply gravity & update position
 		bsr.w	FindFloorObj
-		tst.w	d1					; has yadrin hit the floor?
-		bpl.s	@keep_falling				; if not, branch
-		add.w	d1,ost_y_pos(a0)			; align to floor
-		move.w	#0,ost_y_vel(a0)			; stop falling
-		addq.b	#2,ost_routine(a0)			; goto Yad_Action next
+		tst.w	d1				; has yadrin hit the floor?
+		bpl.s	@keep_falling			; if not, branch
+		add.w	d1,ost_y_pos(a0)		; align to floor
+		move.w	#0,ost_y_vel(a0)		; stop falling
+		addq.b	#2,ost_routine(a0)		; goto Yad_Action next
 		bchg	#status_xflip_bit,ost_status(a0)
 
 	@keep_falling:
@@ -101,14 +101,14 @@ Yad_Index2:	index *,,2
 ; ===========================================================================
 
 Yad_Move:
-		subq.w	#1,ost_yadrin_wait_time(a0)		; decrement timer
-		bpl.s	@wait					; if time remains, branch
-		addq.b	#2,ost_routine2(a0)			; goto Yad_FixToFloor next
-		move.w	#-$100,ost_x_vel(a0)			; move object left
-		move.b	#id_ani_yadrin_walk,ost_anim(a0)	; use walking animation
+		subq.w	#1,ost_yadrin_wait_time(a0)	; decrement timer
+		bpl.s	@wait				; if time remains, branch
+		addq.b	#2,ost_routine2(a0)		; goto Yad_FixToFloor next
+		move.w	#-$100,ost_x_vel(a0)		; move object left
+		move.b	#id_ani_yadrin_walk,ost_anim(a0) ; use walking animation
 		bchg	#status_xflip_bit,ost_status(a0)
 		bne.s	@no_xflip
-		neg.w	ost_x_vel(a0)				; move right if xflipped
+		neg.w	ost_x_vel(a0)			; move right if xflipped
 
 	@wait:
 	@no_xflip:
@@ -116,23 +116,23 @@ Yad_Move:
 ; ===========================================================================
 
 Yad_FixToFloor:
-		bsr.w	SpeedToPos				; update position
+		bsr.w	SpeedToPos			; update position
 		bsr.w	FindFloorObj
 		cmpi.w	#-8,d1
-		blt.s	Yad_Pause				; branch if > 8px below floor
+		blt.s	Yad_Pause			; branch if > 8px below floor
 		cmpi.w	#$C,d1
-		bge.s	Yad_Pause				; branch if > 11px above floor (also detects a ledge)
-		add.w	d1,ost_y_pos(a0)			; align to floor
-		bsr.w	Yad_ChkWall				; detect wall
-		bne.s	Yad_Pause				; branch if wall is hit
+		bge.s	Yad_Pause			; branch if > 11px above floor (also detects a ledge)
+		add.w	d1,ost_y_pos(a0)		; align to floor
+		bsr.w	Yad_ChkWall			; detect wall
+		bne.s	Yad_Pause			; branch if wall is hit
 		rts	
 ; ===========================================================================
 
 Yad_Pause:
-		subq.b	#2,ost_routine2(a0)			; goto Yad_Move next
-		move.w	#59,ost_yadrin_wait_time(a0)		; set pause time to 1 second
-		move.w	#0,ost_x_vel(a0)			; stop moving
-		move.b	#id_ani_yadrin_stand,ost_anim(a0)	; use standing animation
+		subq.b	#2,ost_routine2(a0)		; goto Yad_Move next
+		move.w	#59,ost_yadrin_wait_time(a0)	; set pause time to 1 second
+		move.w	#0,ost_x_vel(a0)		; stop moving
+		move.b	#id_ani_yadrin_stand,ost_anim(a0) ; use standing animation
 		rts	
 
 ; ---------------------------------------------------------------------------

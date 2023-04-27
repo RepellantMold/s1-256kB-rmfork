@@ -15,8 +15,8 @@ Burro_Index:	index *,,2
 		ptr Burro_Main
 		ptr Burro_Action
 
-ost_burro_turn_time:		equ $30				; time between direction changes (2 bytes)
-ost_burro_findfloor_flag:	equ $32				; flag set every other frame to detect edge of floor
+ost_burro_turn_time:		equ $30			; time between direction changes (2 bytes)
+ost_burro_findfloor_flag:	equ $32			; flag set every other frame to detect edge of floor
 
 Burro_Settings:	dc.b ost_routine,2
 		dc.b ost_height,$13
@@ -57,78 +57,78 @@ Burro_Action_Index:
 ; ===========================================================================
 
 Burro_ChangeDir:
-		subq.w	#1,ost_burro_turn_time(a0)		; decrement timer
-		bpl.s	@nochg					; branch if time remains
-		addq.b	#2,ost_routine2(a0)			; goto Burro_Move next
-		move.w	#255,ost_burro_turn_time(a0)		; time until turn (4.2ish seconds)
+		subq.w	#1,ost_burro_turn_time(a0)	; decrement timer
+		bpl.s	@nochg				; branch if time remains
+		addq.b	#2,ost_routine2(a0)		; goto Burro_Move next
+		move.w	#255,ost_burro_turn_time(a0)	; time until turn (4.2ish seconds)
 		move.w	#$80,ost_x_vel(a0)
 		move.b	#id_ani_burro_walk2,ost_anim(a0)
-		bchg	#status_xflip_bit,ost_status(a0)	; change xflip flag
-		beq.s	@nochg					; branch if xflip was 0
-		neg.w	ost_x_vel(a0)				; change direction
+		bchg	#status_xflip_bit,ost_status(a0) ; change xflip flag
+		beq.s	@nochg				; branch if xflip was 0
+		neg.w	ost_x_vel(a0)			; change direction
 
 	@nochg:
 		rts	
 ; ===========================================================================
 
 Burro_Move:
-		subq.w	#1,ost_burro_turn_time(a0)		; decrement turning timer
-		bmi.s	Burro_Move_Turn				; branch if time runs out
+		subq.w	#1,ost_burro_turn_time(a0)	; decrement turning timer
+		bmi.s	Burro_Move_Turn			; branch if time runs out
 
-		bsr.w	SpeedToPos				; update position
-		bchg	#0,ost_burro_findfloor_flag(a0)		; change floor flag
-		bne.s	@find_floor				; branch if it was 1
+		bsr.w	SpeedToPos			; update position
+		bchg	#0,ost_burro_findfloor_flag(a0)	; change floor flag
+		bne.s	@find_floor			; branch if it was 1
 		move.w	ost_x_pos(a0),d3
-		addi.w	#12,d3					; find floor to the right
-		btst	#status_xflip_bit,ost_status(a0)	; is burrobot xflipped?
-		bne.s	@is_flipped				; if yes, branch
-		subi.w	#24,d3					; find floor to the left
+		addi.w	#12,d3				; find floor to the right
+		btst	#status_xflip_bit,ost_status(a0) ; is burrobot xflipped?
+		bne.s	@is_flipped			; if yes, branch
+		subi.w	#24,d3				; find floor to the left
 
 	@is_flipped:
-		jsr	(FindFloorObj2).l			; find floor to left or right
-		cmpi.w	#12,d1					; is floor 12 or more px away?
-		bge.s	Burro_Move_Turn				; if yes, branch
+		jsr	(FindFloorObj2).l		; find floor to left or right
+		cmpi.w	#12,d1				; is floor 12 or more px away?
+		bge.s	Burro_Move_Turn			; if yes, branch
 		rts	
 ; ===========================================================================
 
 @find_floor:
 		jsr	(FindFloorObj).l
-		add.w	d1,ost_y_pos(a0)			; align to floor
+		add.w	d1,ost_y_pos(a0)		; align to floor
 		rts	
 ; ===========================================================================
 
 Burro_Move_Turn:
-		btst	#2,(v_vblank_counter_byte).w		; test bit that changes every 4 frames
-		beq.s	@jump_instead				; branch if 0
-		subq.b	#2,ost_routine2(a0)			; goto Burro_ChangeDir next
-		move.w	#59,ost_burro_turn_time(a0)		; set timer to 1 second
-		move.w	#0,ost_x_vel(a0)			; stop moving
+		btst	#2,(v_vblank_counter_byte).w	; test bit that changes every 4 frames
+		beq.s	@jump_instead			; branch if 0
+		subq.b	#2,ost_routine2(a0)		; goto Burro_ChangeDir next
+		move.w	#59,ost_burro_turn_time(a0)	; set timer to 1 second
+		move.w	#0,ost_x_vel(a0)		; stop moving
 		move.b	#id_ani_burro_walk1,ost_anim(a0)
 		rts	
 ; ===========================================================================
 
 @jump_instead:
-		addq.b	#2,ost_routine2(a0)			; goto Burro_Jump next
-		move.w	#-$400,ost_y_vel(a0)			; jump upwards
+		addq.b	#2,ost_routine2(a0)		; goto Burro_Jump next
+		move.w	#-$400,ost_y_vel(a0)		; jump upwards
 		move.b	#id_ani_burro_digging,ost_anim(a0)
 		rts	
 ; ===========================================================================
 
 Burro_Jump:
-		bsr.w	SpeedToPos				; update position
-		addi.w	#$18,ost_y_vel(a0)			; apply gravity
-		bmi.s	@exit					; branch if burrobot is moving upwards
+		bsr.w	SpeedToPos			; update position
+		addi.w	#$18,ost_y_vel(a0)		; apply gravity
+		bmi.s	@exit				; branch if burrobot is moving upwards
 
 		move.b	#id_ani_burro_fall,ost_anim(a0)
 		jsr	(FindFloorObj).l
-		tst.w	d1					; has burrobot hit the floor?
-		bpl.s	@exit					; if not, branch
-		add.w	d1,ost_y_pos(a0)			; align to floor
-		move.w	#0,ost_y_vel(a0)			; stop falling
+		tst.w	d1				; has burrobot hit the floor?
+		bpl.s	@exit				; if not, branch
+		add.w	d1,ost_y_pos(a0)		; align to floor
+		move.w	#0,ost_y_vel(a0)		; stop falling
 		move.b	#id_ani_burro_walk2,ost_anim(a0)
-		move.w	#255,ost_burro_turn_time(a0)		; time until turn (4.2ish seconds)
-		subq.b	#2,ost_routine2(a0)			; goto Burro_Move next
-		bsr.w	Burro_ChkDist				; check & update xflip flag
+		move.w	#255,ost_burro_turn_time(a0)	; time until turn (4.2ish seconds)
+		subq.b	#2,ost_routine2(a0)		; goto Burro_Move next
+		bsr.w	Burro_ChkDist			; check & update xflip flag
 
 	@exit:
 		rts	
@@ -136,16 +136,16 @@ Burro_Jump:
 
 Burro_ChkSonic:
 		move.w	#$60,d2
-		bsr.w	Burro_ChkDist				; is Sonic < $60px from burrobot?
-		bcc.s	@exit					; if not, branch
+		bsr.w	Burro_ChkDist			; is Sonic < $60px from burrobot?
+		bcc.s	@exit				; if not, branch
 		move.w	(v_ost_player+ost_y_pos).w,d0
 		sub.w	ost_y_pos(a0),d0
-		bcc.s	@exit					; branch is Sonic is right of burrobot
+		bcc.s	@exit				; branch is Sonic is right of burrobot
 		cmpi.w	#-$80,d0
-		bcs.s	@exit					; branch if Sonic is more than $80px away
-		subq.b	#2,ost_routine2(a0)			; goto Burro_Jump next
+		bcs.s	@exit				; branch if Sonic is more than $80px away
+		subq.b	#2,ost_routine2(a0)		; goto Burro_Jump next
 		move.w	d1,ost_x_vel(a0)
-		move.w	#-$400,ost_y_vel(a0)			; burrobot jumps
+		move.w	#-$400,ost_y_vel(a0)		; burrobot jumps
 
 	@exit:
 		rts	
@@ -166,7 +166,7 @@ Burro_ChkDist:
 		bset	#status_xflip_bit,ost_status(a0)
 		move.w	(v_ost_player+ost_x_pos).w,d0
 		sub.w	ost_x_pos(a0),d0
-		bcc.s	@right					; if Sonic is right of burrobot, branch
+		bcc.s	@right				; if Sonic is right of burrobot, branch
 		neg.w	d0
 		neg.w	d1
 		bclr	#status_xflip_bit,ost_status(a0)

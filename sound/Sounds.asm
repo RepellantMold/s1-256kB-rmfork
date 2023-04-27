@@ -29,7 +29,7 @@ play		macro	queue, command, song
 ; leave some values out whenever you modify the game!
 ; ---------------------------------------------------------------------------
 
-MusicFiles	macro	func	; TODO: Find suitable speed-up tempos for the remaining entries
+MusicFiles	macro	func				; TODO: Find suitable speed-up tempos for the remaining entries
 		\func	GHZ, $90, $07			; Green Hill Zone music
 		\func	LZ, $90, $72			; Labyrinth Zone music
 		\func	MZ, $90, $73			; Marble Zone music
@@ -38,17 +38,17 @@ MusicFiles	macro	func	; TODO: Find suitable speed-up tempos for the remaining en
 		\func	SBZ, $90, $08			; Scrap Brain Zone music
 		\func	Invincible, $90, $FF		; Invincibility music
 		\func	ExtraLife, $90, $05		; Extra Life music
-		\func	SpecialStage, $90, ; $00	; Special Stage music
-		\func	TitleScreen, $90, ; $00		; Title Screen music
-		\func	Ending, $90, ; $00		; Ending music
-		\func	Boss, $90, ; $00		; Boss music
-		\func	FZ, $90, ; $00			; Final Zone music
-		\func	HasPassed, $90, ; $00		; Act Finished music
-		\func	GameOver, $90, ; $00		; Game Over music
-		\func	Continue, $90, ; $00		; Continue music
-		\func	Credits, $90, ; $00		; Credits music
-		\func	Drowning, $90, ; $00		; Drowning music
-		\func	Emerald, $90, ; $00		; Emerald music
+		\func	SpecialStage, $90,		; $00	; Special Stage music
+		\func	TitleScreen, $90,		; $00		; Title Screen music
+		\func	Ending, $90,			; $00		; Ending music
+		\func	Boss, $90,			; $00		; Boss music
+		\func	FZ, $90,			; $00			; Final Zone music
+		\func	HasPassed, $90,			; $00		; Act Finished music
+		\func	GameOver, $90,			; $00		; Game Over music
+		\func	Continue, $90,			; $00		; Continue music
+		\func	Credits, $90,			; $00		; Credits music
+		\func	Drowning, $90,			; $00		; Drowning music
+		\func	Emerald, $90,			; $00		; Emerald music
 	endm
 
 ; ===========================================================================

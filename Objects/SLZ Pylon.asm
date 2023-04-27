@@ -30,11 +30,11 @@ Pyl_Main:	; Routine 0
 		bsr.w	SetupObject
 
 Pyl_Display:	; Routine 2
-		move.l	(v_camera_x_pos).w,d1			; get camera x pos (in high word)
-		add.l	d1,d1					; double it
-		swap	d1					; move into low word
-		neg.w	d1					; invert
-		move.w	d1,ost_x_pos(a0)			; update x position of pylon
+		move.l	(v_camera_x_pos).w,d1		; get camera x pos (in high word)
+		add.l	d1,d1				; double it
+		swap	d1				; move into low word
+		neg.w	d1				; invert
+		move.w	d1,ost_x_pos(a0)		; update x position of pylon
 		move.l	(v_camera_y_pos).w,d1
 		add.l	d1,d1
 		swap	d1

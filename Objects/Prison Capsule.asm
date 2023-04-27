@@ -28,7 +28,7 @@ Pri_Index:	index *,,2
 Pri_Var:	dc.b id_Pri_Body, 4, id_frame_prison_capsule ; 0 - body
 		dc.b id_Pri_Switch, 5, id_frame_prison_switch1 ; 1 - switch
 
-ost_prison_y_start:	equ $30					; original y position (2 bytes)
+ost_prison_y_start:	equ $30				; original y position (2 bytes)
 
 Pri_Settings:	dc.b so_write_long,ost_mappings
 		dc.l Map_Pri
@@ -45,17 +45,17 @@ Pri_Main:	; Routine 0
 		jsr	SetupObject
 		move.w	ost_y_pos(a0),ost_prison_y_start(a0)
 		moveq	#0,d0
-		move.b	ost_subtype(a0),d0			; get subtype (0 or 1)
+		move.b	ost_subtype(a0),d0		; get subtype (0 or 1)
 		lea	Pri_Var(pc,d0.w),a1
-		move.b	(a1)+,ost_routine(a0)			; goto Pri_Body/Pri_Switch next
+		move.b	(a1)+,ost_routine(a0)		; goto Pri_Body/Pri_Switch next
 		move.b	(a1)+,ost_priority(a0)
 		move.b	(a1)+,ost_frame(a0)
 		rts	
 ; ===========================================================================
 
 Pri_Body:	; Routine 2
-		cmpi.b	#2,(v_boss_status).w			; has prison been opened?
-		beq.s	@is_open				; if yes, branch
+		cmpi.b	#2,(v_boss_status).w		; has prison been opened?
+		beq.s	@is_open			; if yes, branch
 		move.w	#$2B,d1
 		move.w	#$18,d2
 		move.w	#$18,d3
@@ -64,14 +64,14 @@ Pri_Body:	; Routine 2
 ; ===========================================================================
 
 @is_open:
-		tst.b	ost_solid(a0)				; is Sonic on top of the prison?
-		beq.s	@not_on_top				; if not, branch
+		tst.b	ost_solid(a0)			; is Sonic on top of the prison?
+		beq.s	@not_on_top			; if not, branch
 		clr.b	ost_solid(a0)
 		bclr	#status_platform_bit,(v_ost_player+ost_status).w
 		bset	#status_air_bit,(v_ost_player+ost_status).w
 
 	@not_on_top:
-		move.b	#id_frame_prison_broken,ost_frame(a0)	; use use borken prison frame (2)
+		move.b	#id_frame_prison_broken,ost_frame(a0) ; use use borken prison frame (2)
 		rts	
 ; ===========================================================================
 
@@ -84,16 +84,16 @@ Pri_Switch:	; Routine 4
 		lea	(Ani_Pri).l,a1
 		jsr	(AnimateSprite).l
 		move.w	ost_prison_y_start(a0),ost_y_pos(a0)
-		tst.b	ost_solid(a0)				; is Sonic on top of the switch?
-		beq.s	@not_on_top				; if not, branch
+		tst.b	ost_solid(a0)			; is Sonic on top of the switch?
+		beq.s	@not_on_top			; if not, branch
 
-		addq.w	#8,ost_y_pos(a0)			; move switch down 8px
-		move.b	#id_Pri_Explosion,ost_routine(a0)	; goto Pri_Explosion next
-		move.w	#60,ost_anim_time(a0)			; set time for explosions to 1 sec
-		clr.b	(f_hud_time_update).w			; stop time counter
-		clr.b	(f_boss_boundary).w			; lock screen position
-		move.b	#1,(f_lock_controls).w			; lock controls
-		move.w	#(btnR<<8),(v_joypad_hold).w		; make Sonic run to the right
+		addq.w	#8,ost_y_pos(a0)		; move switch down 8px
+		move.b	#id_Pri_Explosion,ost_routine(a0) ; goto Pri_Explosion next
+		move.w	#60,ost_anim_time(a0)		; set time for explosions to 1 sec
+		clr.b	(f_hud_time_update).w		; stop time counter
+		clr.b	(f_boss_boundary).w		; lock screen position
+		move.b	#1,(f_lock_controls).w		; lock controls
+		move.w	#(btnR<<8),(v_joypad_hold).w	; make Sonic run to the right
 		clr.b	ost_solid(a0)
 		bclr	#status_platform_bit,(v_ost_player+ost_status).w
 		bset	#status_air_bit,(v_ost_player+ost_status).w
@@ -104,12 +104,12 @@ Pri_Switch:	; Routine 4
 
 Pri_Explosion:	; Routine 6, 8, $A
 		moveq	#7,d0
-		and.b	(v_vblank_counter_byte).w,d0		; byte that increments every frame
-		bne.s	@noexplosion				; branch if any of bits 0-2 are set
+		and.b	(v_vblank_counter_byte).w,d0	; byte that increments every frame
+		bne.s	@noexplosion			; branch if any of bits 0-2 are set
 
-		jsr	(FindFreeObj).l				; find free OST slot
-		bne.s	@noexplosion				; branch if not found
-		move.b	#id_ExplosionBomb,ost_id(a1)		; load explosion object every 8 frames
+		jsr	(FindFreeObj).l			; find free OST slot
+		bne.s	@noexplosion			; branch if not found
+		move.b	#id_ExplosionBomb,ost_id(a1)	; load explosion object every 8 frames
 		move.w	ost_x_pos(a0),ost_x_pos(a1)
 		move.w	ost_y_pos(a0),ost_y_pos(a1)
 		jsr	(RandomNumber).l
@@ -117,38 +117,38 @@ Pri_Explosion:	; Routine 6, 8, $A
 		move.b	d0,d1
 		lsr.b	#2,d1
 		subi.w	#$20,d1
-		add.w	d1,ost_x_pos(a1)			; pseudorandom position
+		add.w	d1,ost_x_pos(a1)		; pseudorandom position
 		lsr.w	#8,d0
 		lsr.b	#3,d0
 		add.w	d0,ost_y_pos(a1)
 
 	@noexplosion:
-		subq.w	#1,ost_anim_time(a0)			; decrement timer
-		beq.s	@makeanimal				; branch if 0
+		subq.w	#1,ost_anim_time(a0)		; decrement timer
+		beq.s	@makeanimal			; branch if 0
 		rts	
 ; ===========================================================================
 
 @makeanimal:
-		move.b	#2,(v_boss_status).w			; set flag for prison open
-		move.b	#id_Pri_Animals,ost_routine(a0)		; goto Pri_Animals next
-		move.b	#id_frame_prison_blank,ost_frame(a0)	; make switch invisible
-		move.w	#150,ost_anim_time(a0)			; set time for additional animals to load to 2.5 secs
+		move.b	#2,(v_boss_status).w		; set flag for prison open
+		move.b	#id_Pri_Animals,ost_routine(a0)	; goto Pri_Animals next
+		move.b	#id_frame_prison_blank,ost_frame(a0) ; make switch invisible
+		move.w	#150,ost_anim_time(a0)		; set time for additional animals to load to 2.5 secs
 		addi.w	#$20,ost_y_pos(a0)
-		moveq	#8-1,d6					; number of animals to load
-		move.w	#$9A,d5					; animal jumping queue start
-		moveq	#-$1C,d4				; relative x position
+		moveq	#8-1,d6				; number of animals to load
+		move.w	#$9A,d5				; animal jumping queue start
+		moveq	#-$1C,d4			; relative x position
 
 	@loop:
-		jsr	(FindFreeObj).l				; find free OST slot
-		bne.s	@fail					; branch if not found
-		move.b	#id_Animals,ost_id(a1)			; load animal object
+		jsr	(FindFreeObj).l			; find free OST slot
+		bne.s	@fail				; branch if not found
+		move.b	#id_Animals,ost_id(a1)		; load animal object
 		move.w	ost_x_pos(a0),ost_x_pos(a1)
 		move.w	ost_y_pos(a0),ost_y_pos(a1)
 		add.w	d4,ost_x_pos(a1)
-		addq.w	#7,d4					; next animal loads 7px right
-		move.w	d5,ost_animal_prison_num(a1)		; give each animal a num so it jumps at a different time
-		subq.w	#8,d5					; decrement queue number
-		dbf	d6,@loop				; repeat 7 more	times
+		addq.w	#7,d4				; next animal loads 7px right
+		move.w	d5,ost_animal_prison_num(a1)	; give each animal a num so it jumps at a different time
+		subq.w	#8,d5				; decrement queue number
+		dbf	d6,@loop			; repeat 7 more	times
 
 	@fail:
 		rts	
@@ -156,12 +156,12 @@ Pri_Explosion:	; Routine 6, 8, $A
 
 Pri_Animals:	; Routine $C
 		moveq	#7,d0
-		and.b	(v_vblank_counter_byte).w,d0		; byte that increments every frame
-		bne.s	@noanimal				; branch if any of bits 0-2 are set
+		and.b	(v_vblank_counter_byte).w,d0	; byte that increments every frame
+		bne.s	@noanimal			; branch if any of bits 0-2 are set
 
-		jsr	(FindFreeObj).l				; find free OST slot
-		bne.s	@noanimal				; branch if not found
-		move.b	#id_Animals,ost_id(a1)			; load animal object every 8 frames
+		jsr	(FindFreeObj).l			; find free OST slot
+		bne.s	@noanimal			; branch if not found
+		move.b	#id_Animals,ost_id(a1)		; load animal object every 8 frames
 		move.w	ost_x_pos(a0),ost_x_pos(a1)
 		move.w	ost_y_pos(a0),ost_y_pos(a1)
 		jsr	(RandomNumber).l
@@ -172,14 +172,14 @@ Pri_Animals:	; Routine $C
 		neg.w	d0
 
 	@ispositive:
-		add.w	d0,ost_x_pos(a1)			; pseudorandom position
-		move.w	#$C,ost_animal_prison_num(a1)		; set time for animal to jump out
+		add.w	d0,ost_x_pos(a1)		; pseudorandom position
+		move.w	#$C,ost_animal_prison_num(a1)	; set time for animal to jump out
 
 	@noanimal:
-		subq.w	#1,ost_anim_time(a0)			; decrement timer
-		bne.s	@wait					; branch if time remains
-		addq.b	#2,ost_routine(a0)			; goto Pri_EndAct next
-		move.w	#180,ost_anim_time(a0)			; this does nothing
+		subq.w	#1,ost_anim_time(a0)		; decrement timer
+		bne.s	@wait				; branch if time remains
+		addq.b	#2,ost_routine(a0)		; goto Pri_EndAct next
+		move.w	#180,ost_anim_time(a0)		; this does nothing
 
 	@wait:
 Pri_EndAct_found:
@@ -189,16 +189,16 @@ Pri_EndAct_found:
 Pri_EndAct:	; Routine $E
 		moveq	#$40-2,d0
 		moveq	#id_Animals,d1
-		moveq	#sizeof_ost,d2				; d2 = $40
-		lea	(v_ost_player+sizeof_ost).w,a1		; start at first OST slot after Sonic
+		moveq	#sizeof_ost,d2			; d2 = $40
+		lea	(v_ost_player+sizeof_ost).w,a1	; start at first OST slot after Sonic
 
 	@findanimal:
-		cmp.b	(a1),d1					; is object $28	(animal) loaded?
-		beq.s	Pri_EndAct_found					; if yes, branch
-		adda.w	d2,a1					; next OST slot
-		dbf	d0,@findanimal				; repeat $3E times (this misses the last $40 OST slots)
+		cmp.b	(a1),d1				; is object $28	(animal) loaded?
+		beq.s	Pri_EndAct_found		; if yes, branch
+		adda.w	d2,a1				; next OST slot
+		dbf	d0,@findanimal			; repeat $3E times (this misses the last $40 OST slots)
 
-		jsr	(HasPassedAct).l			; load gfx, play music (see "Signpost & HasPassedAct.asm")
+		jsr	(HasPassedAct).l		; load gfx, play music (see "Signpost & HasPassedAct.asm")
 		jmp	(DeleteObject).l
 
 ; ---------------------------------------------------------------------------

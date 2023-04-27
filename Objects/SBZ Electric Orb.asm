@@ -15,7 +15,7 @@ Elec_Index:	index *,,2
 		ptr Elec_Main
 		ptr Elec_Shock
 
-ost_electric_rate:	equ $34					; zap rate - applies bitmask to frame counter (2 bytes)
+ost_electric_rate:	equ $34				; zap rate - applies bitmask to frame counter (2 bytes)
 
 Elec_Settings:	dc.b ost_routine,2
 		dc.b so_write_long,ost_mappings
@@ -32,27 +32,27 @@ Elec_Main:	; Routine 0
 		lea	Elec_Settings(pc),a2
 		bsr.w	SetupObject
 		moveq	#0,d0
-		move.b	ost_subtype(a0),d0			; read object type (2/4/8)
-		lsl.w	#4,d0					; multiply by $10
-		subq.w	#1,d0					; d0 = $1F or $3F or $7F
+		move.b	ost_subtype(a0),d0		; read object type (2/4/8)
+		lsl.w	#4,d0				; multiply by $10
+		subq.w	#1,d0				; d0 = $1F or $3F or $7F
 		move.w	d0,ost_electric_rate(a0)
 
 Elec_Shock:	; Routine 2
-		move.w	(v_frame_counter).w,d0			; get byte that increments every frame
-		and.w	ost_electric_rate(a0),d0		; and with rate bitmask
-		bne.s	@animate				; branch if any bits are set
+		move.w	(v_frame_counter).w,d0		; get byte that increments every frame
+		and.w	ost_electric_rate(a0),d0	; and with rate bitmask
+		bne.s	@animate			; branch if any bits are set
 
-		move.b	#id_ani_electro_zap,ost_anim(a0)	; run "zap" animation every $20, $40 or $80 frames
-		tst.b	ost_render(a0)				; is object on-screen?
-		bpl.s	@animate				; if not, branch
-		play.w	1, jsr, sfx_Electricity			; play electricity sound
+		move.b	#id_ani_electro_zap,ost_anim(a0) ; run "zap" animation every $20, $40 or $80 frames
+		tst.b	ost_render(a0)			; is object on-screen?
+		bpl.s	@animate			; if not, branch
+		play.w	1, jsr, sfx_Electricity		; play electricity sound
 
 	@animate:
 		lea	(Ani_Elec).l,a1
 		jsr	(AnimateSprite).l
 		move.b	#0,ost_col_type(a0)
-		cmpi.b	#id_frame_electro_zap4,ost_frame(a0)	; is 4th frame displayed?
-		bne.s	@display				; if not, branch
+		cmpi.b	#id_frame_electro_zap4,ost_frame(a0) ; is 4th frame displayed?
+		bne.s	@display			; if not, branch
 		move.b	#id_col_72x8+id_col_hurt,ost_col_type(a0) ; if yes, make object hurt Sonic
 
 	@display:

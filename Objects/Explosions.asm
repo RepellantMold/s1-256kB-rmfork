@@ -38,27 +38,27 @@ Ex_Settings2:	dc.b ost_id,id_Animals
 ; ===========================================================================
 
 ExItem_Animal:	; Routine 0
-		addq.b	#2,ost_routine(a0)			; goto ExItem_Main next
-		bsr.w	FindFreeObj				; find free OST slot
-		bne.s	ExItem_Main				; branch if none found
+		addq.b	#2,ost_routine(a0)		; goto ExItem_Main next
+		bsr.w	FindFreeObj			; find free OST slot
+		bne.s	ExItem_Main			; branch if none found
 		lea	Ex_Settings2(pc),a2
 		bsr.w	SetupChild
 
 ExItem_Main:	; Routine 2
-		addq.b	#2,ost_routine(a0)			; goto ExItem_Animate next
+		addq.b	#2,ost_routine(a0)		; goto ExItem_Animate next
 		lea	Ex_Settings(pc),a2
 		bsr.w	SetupObject
 		move.b	#id_frame_ex_0,ost_frame(a0)
-		play.w	1, jsr, sfx_Break			; play breaking enemy sound
+		play.w	1, jsr, sfx_Break		; play breaking enemy sound
 
 ExItem_Animate:	; Routine 4 (2 for ExplosionBomb)
 ExBom_Animate:
-		subq.b	#1,ost_anim_time(a0)			; subtract 1 from frame duration
+		subq.b	#1,ost_anim_time(a0)		; subtract 1 from frame duration
 		bpl.s	@display
-		move.b	#7,ost_anim_time(a0)			; set frame duration to 7 frames
-		addq.b	#1,ost_frame(a0)			; next frame
-		cmpi.b	#5,ost_frame(a0)			; is the final frame (05) displayed?
-		beq.w	DeleteObject				; if yes, branch
+		move.b	#7,ost_anim_time(a0)		; set frame duration to 7 frames
+		addq.b	#1,ost_frame(a0)		; next frame
+		cmpi.b	#5,ost_frame(a0)		; is the final frame (05) displayed?
+		beq.w	DeleteObject			; if yes, branch
 
 	@display:
 		bra.w	DisplaySprite
@@ -82,9 +82,9 @@ ExBom_Index:	index *,,2
 ; ===========================================================================
 
 ExBom_Main:	; Routine 0
-		addq.b	#2,ost_routine(a0)			; goto ExBom_Animate next
+		addq.b	#2,ost_routine(a0)		; goto ExBom_Animate next
 		lea	Ex_Settings(pc),a2
 		bsr.w	SetupObject
 		move.l	#Map_ExplodeBomb,ost_mappings(a0)
 		move.b	#id_frame_ex_0_0,ost_frame(a0)
-		play.w	1, jmp, sfx_Bomb			; play exploding bomb sound
+		play.w	1, jmp, sfx_Bomb		; play exploding bomb sound

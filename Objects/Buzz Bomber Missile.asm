@@ -19,8 +19,8 @@ Msl_Index:	index *,,2
 		ptr Msl_Delete
 		ptr Msl_FromNewt
 
-ost_missile_wait_time:	equ $32					; time delay (2 bytes)
-ost_missile_parent:	equ $3C					; address of OST of parent object (4 bytes)
+ost_missile_wait_time:	equ $32				; time delay (2 bytes)
+ost_missile_parent:	equ $3C				; address of OST of parent object (4 bytes)
 
 Msl_Settings:	dc.b ost_routine,2
 		dc.b ost_render,render_rel
@@ -33,16 +33,16 @@ Msl_Settings:	dc.b ost_routine,2
 ; ===========================================================================
 
 Msl_Main:	; Routine 0
-		subq.w	#1,ost_missile_wait_time(a0)		; decrement timer
-		bpl.s	Msl_ChkCancel				; branch if time remains
+		subq.w	#1,ost_missile_wait_time(a0)	; decrement timer
+		bpl.s	Msl_ChkCancel			; branch if time remains
 		lea	Msl_Settings(pc),a2
 		bsr.w	SetupObject
 		bset	#tile_pal12_bit,ost_tile(a0)
 		andi.b	#status_xflip+status_yflip,ost_status(a0)
-		tst.b	ost_subtype(a0)				; was object created by	a Newtron?
-		beq.s	Msl_Animate				; if not, branch
+		tst.b	ost_subtype(a0)			; was object created by	a Newtron?
+		beq.s	Msl_Animate			; if not, branch
 
-		move.b	#id_Msl_FromNewt,ost_routine(a0)	; goto Msl_FromNewt next
+		move.b	#id_Msl_FromNewt,ost_routine(a0) ; goto Msl_FromNewt next
 		move.b	#id_col_6x6+id_col_hurt,ost_col_type(a0)
 		move.b	#id_ani_buzz_missile,ost_anim(a0)
 		bra.s	Msl_Animate2
@@ -59,8 +59,8 @@ Msl_Animate:	; Routine 2
 
 Msl_ChkCancel:
 		movea.l	ost_missile_parent(a0),a1
-		cmpi.b	#id_ExplosionItem,ost_id(a1)		; has Buzz Bomber been destroyed?
-		beq.s	Msl_Delete				; if yes, branch
+		cmpi.b	#id_ExplosionItem,ost_id(a1)	; has Buzz Bomber been destroyed?
+		beq.s	Msl_Delete			; if yes, branch
 		rts
 
 ; ===========================================================================
@@ -72,8 +72,8 @@ Msl_FromBuzz:	; Routine 4
 		bsr.s	Msl_Animate2
 		move.w	(v_boundary_bottom).w,d0
 		addi.w	#224,d0
-		cmp.w	ost_y_pos(a0),d0			; has object moved below the level boundary?
-		bcs.s	Msl_Delete				; if yes, branch
+		cmp.w	ost_y_pos(a0),d0		; has object moved below the level boundary?
+		bcs.s	Msl_Delete			; if yes, branch
 		rts	
 ; ===========================================================================
 
@@ -82,9 +82,9 @@ Msl_Delete:	; Routine 6
 ; ===========================================================================
 
 Msl_FromNewt:	; Routine 8
-		tst.b	ost_render(a0)				; is object on-screen?
-		bpl.s	Msl_Delete				; if not, branch
-		bsr.w	SpeedToPos				; update position
+		tst.b	ost_render(a0)			; is object on-screen?
+		bpl.s	Msl_Delete			; if not, branch
+		bsr.w	SpeedToPos			; update position
 
 Msl_Animate2:
 		lea	(Ani_Missile).l,a1

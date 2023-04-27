@@ -35,15 +35,15 @@ GRing_Main:	; Routine 0
 		bsr.w	SetupObject
 		tst.b	ost_render(a0)
 		bpl.s	GRing_Animate
-		cmpi.b	#6,(v_emeralds).w			; do you have 6 emeralds?
-		beq.w	GRing_Delete				; if yes, branch
-		cmpi.w	#50,(v_rings).w				; do you have at least 50 rings?
-		bcc.s	GRing_Okay				; if yes, branch
+		cmpi.b	#6,(v_emeralds).w		; do you have 6 emeralds?
+		beq.w	GRing_Delete			; if yes, branch
+		cmpi.w	#50,(v_rings).w			; do you have at least 50 rings?
+		bcc.s	GRing_Okay			; if yes, branch
 		rts	
 ; ===========================================================================
 
 GRing_Okay:
-		addq.b	#2,ost_routine(a0)			; goto GRing_Animate next
+		addq.b	#2,ost_routine(a0)		; goto GRing_Animate next
 		move.b	#id_col_8x16+id_col_item,ost_col_type(a0) ; when Sonic hits the item, goto GRing_Collect next (see ReactToItem)
 
 GRing_Animate:	; Routine 2
@@ -53,21 +53,21 @@ GRing_Animate:	; Routine 2
 ; ===========================================================================
 
 GRing_Collect:	; Routine 4
-		subq.b	#2,ost_routine(a0)			; goto GRing_Animate next
+		subq.b	#2,ost_routine(a0)		; goto GRing_Animate next
 		move.b	#0,ost_col_type(a0)
-		bsr.w	FindFreeObj				; find free OST slot
-		bne.w	@fail					; branch if not found
+		bsr.w	FindFreeObj			; find free OST slot
+		bne.w	@fail				; branch if not found
 		lea	GRing_Settings2(pc),a2
 		bsr.w	SetupChild
 		move.l	a0,ost_flash_parent(a1)
 		move.w	(v_ost_player+ost_x_pos).w,d0
-		cmp.w	ost_x_pos(a0),d0			; has Sonic come from the left?
-		bcs.s	@noflip					; if yes, branch
-		bset	#render_xflip_bit,ost_render(a1)	; reverse flash object
+		cmp.w	ost_x_pos(a0),d0		; has Sonic come from the left?
+		bcs.s	@noflip				; if yes, branch
+		bset	#render_xflip_bit,ost_render(a1) ; reverse flash object
 
 	@fail:
 	@noflip:
-		play.w	1, jsr, sfx_GiantRing			; play giant ring sound
+		play.w	1, jsr, sfx_GiantRing		; play giant ring sound
 		bra.s	GRing_Animate
 ; ===========================================================================
 

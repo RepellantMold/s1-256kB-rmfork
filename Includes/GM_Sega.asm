@@ -4,37 +4,37 @@
 
 include_Sega:	macro
 
-sega_bg_width:	equ $18						; bg dimensions - striped pattern behind logo
+sega_bg_width:	equ $18					; bg dimensions - striped pattern behind logo
 sega_bg_height:	equ 8
-sega_fg_width:	equ $28						; fg dimensions - white box with logo cutout
+sega_fg_width:	equ $28					; fg dimensions - white box with logo cutout
 sega_fg_height:	equ $1C
 
 GM_Sega:
-		play.b	1, bsr.w, cmd_Stop			; stop music
+		play.b	1, bsr.w, cmd_Stop		; stop music
 		bsr.w	ClearPLC
-		bsr.w	PaletteFadeOut				; fade out from previous gamemode
+		bsr.w	PaletteFadeOut			; fade out from previous gamemode
 		bsr.w	LoadVDPSettings
-		move.w	#$8700,(a6)				; set background colour (palette entry 0)
-		move.w	#$8B00,(a6)				; full-screen scrolling
+		move.w	#$8700,(a6)			; set background colour (palette entry 0)
+		move.w	#$8B00,(a6)			; full-screen scrolling
 		clr.b	(f_water_pal_full).w
 		disable_ints
 		disable_display
 		bsr.w	ClearScreen
 		locVRAM	0
-		lea	(Nem_SegaLogo).l,a0			; load Sega logo patterns
+		lea	(Nem_SegaLogo).l,a0		; load Sega logo patterns
 		bsr.w	NemDec
 		lea	($FF0000).l,a1
-		lea	(Eni_SegaLogo).l,a0			; load Sega logo mappings
+		lea	(Eni_SegaLogo).l,a0		; load Sega logo mappings
 		move.w	#0,d0
 		bsr.w	EniDec
 
 		copyTilemap	$FF0000,vram_bg,8,$A,sega_bg_width,sega_bg_height
 		copyTilemap	$FF0000+(sega_bg_width*sega_bg_height*2),vram_fg,0,0,sega_fg_width,sega_fg_height
-								; copy mappings to fg/bg nametables in VRAM
+							; copy mappings to fg/bg nametables in VRAM
 
 	@loadpal:
 		moveq	#id_Pal_SegaBG,d0
-		bsr.w	PalLoad_Now				; load Sega logo palette
+		bsr.w	PalLoad_Now			; load Sega logo palette
 		move.w	#-$A,(v_palcycle_num).w
 		move.w	#0,(v_palcycle_time).w
 		move.w	#0,(v_palcycle_buffer+$12).w
@@ -44,24 +44,24 @@ GM_Sega:
 Sega_PaletteLoop:
 		move.b	#id_VBlank_Sega,(v_vblank_routine).w
 		bsr.w	WaitForVBlank
-		bsr.w	PalCycle_Sega				; update palette
-		bne.s	Sega_PaletteLoop			; repeat until palette cycle is complete (d0 = 0)
+		bsr.w	PalCycle_Sega			; update palette
+		bne.s	Sega_PaletteLoop		; repeat until palette cycle is complete (d0 = 0)
 
-		play.b	1, bsr.w, cmd_Sega			; play "SEGA" sound
+		play.b	1, bsr.w, cmd_Sega		; play "SEGA" sound
 		move.b	#id_VBlank_Sega_SkipLoad,(v_vblank_routine).w
 		bsr.w	WaitForVBlank
-		move.w	#30,(v_countdown).w			; set timer to 0.5 seconds
+		move.w	#30,(v_countdown).w		; set timer to 0.5 seconds
 
 Sega_WaitLoop:
 		move.b	#id_VBlank_Sega,(v_vblank_routine).w
 		bsr.w	WaitForVBlank
 		tst.w	(v_countdown).w
-		beq.s	@goto_title				; branch if timer hits 0
-		andi.b	#btnStart,(v_joypad_press_actual).w	; is Start button pressed?
-		beq.s	Sega_WaitLoop				; if not, branch
+		beq.s	@goto_title			; branch if timer hits 0
+		andi.b	#btnStart,(v_joypad_press_actual).w ; is Start button pressed?
+		beq.s	Sega_WaitLoop			; if not, branch
 
 	@goto_title:
-		move.b	#id_Title,(v_gamemode).w		; go to title screen
+		move.b	#id_Title,(v_gamemode).w	; go to title screen
 		rts	
 
 		endm
@@ -72,19 +72,19 @@ Sega_WaitLoop:
 
 PalCycle_Sega:
 PalCycle_Sega_Gradient:
-		tst.b	(v_palcycle_time+1).w			; is low byte of timer 0?
-		bne.s	loc_206A				; if not, branch
-		lea	(v_pal_dry_line2).w,a1			; address for 2nd palette line
-		lea	(Pal_Sega1).l,a0			; address of blue gradient palette source
+		tst.b	(v_palcycle_time+1).w		; is low byte of timer 0?
+		bne.s	loc_206A			; if not, branch
+		lea	(v_pal_dry_line2).w,a1		; address for 2nd palette line
+		lea	(Pal_Sega1).l,a0		; address of blue gradient palette source
 		moveq	#5,d1
-		move.w	(v_palcycle_num).w,d0			; d0 = -$A (initially)
+		move.w	(v_palcycle_num).w,d0		; d0 = -$A (initially)
 
 	@loop_findcolour:
-		bpl.s	loc_202A				; branch if d0 = 0 
-		addq.w	#2,a0					; read next colour from source
+		bpl.s	loc_202A			; branch if d0 = 0 
+		addq.w	#2,a0				; read next colour from source
 		subq.w	#1,d1
-		addq.w	#2,d0					; increment d0
-		bra.s	@loop_findcolour			; repeat until d0 = 0
+		addq.w	#2,d0				; increment d0
+		bra.s	@loop_findcolour		; repeat until d0 = 0
 ; ===========================================================================
 
 loc_202A:
@@ -122,8 +122,8 @@ loc_2062:
 ; ===========================================================================
 
 loc_206A:
-		subq.b	#1,(v_palcycle_time).w			; decrement timer
-		bpl.s	loc_20BC				; branch if positive
+		subq.b	#1,(v_palcycle_time).w		; decrement timer
+		bpl.s	loc_20BC			; branch if positive
 		move.b	#4,(v_palcycle_time).w
 		move.w	(v_palcycle_num).w,d0
 		addi.w	#$C,d0

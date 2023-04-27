@@ -18,8 +18,8 @@ Circ_Index:	index *,,2
 		ptr Circ_Platform
 		ptr Circ_StoodOn
 
-ost_circ_y_start:	equ $30					; original y-axis position (2 bytes)
-ost_circ_x_start:	equ $32					; original x-axis position (2 bytes)
+ost_circ_y_start:	equ $30				; original y-axis position (2 bytes)
+ost_circ_x_start:	equ $32				; original x-axis position (2 bytes)
 
 Circ_Settings:	dc.b ost_routine,2
 		dc.b so_write_long,ost_mappings
@@ -42,18 +42,18 @@ Circ_Main:	; Routine 0
 Circ_Platform:	; Routine 2
 		moveq	#0,d1
 		move.b	ost_actwidth(a0),d1
-		jsr	(DetectPlatform).l			; detect collision and goto Circ_StoodOn next if true
+		jsr	(DetectPlatform).l		; detect collision and goto Circ_StoodOn next if true
 		bra.w	Circ_Types
 ; ===========================================================================
 
 Circ_StoodOn:	; Routine 4
 		moveq	#0,d1
 		move.b	ost_actwidth(a0),d1
-		jsr	(ExitPlatform).l			; goto Circ_Platform next if Sonic leaves platform
+		jsr	(ExitPlatform).l		; goto Circ_Platform next if Sonic leaves platform
 		move.w	ost_x_pos(a0),-(sp)
 		bsr.w	Circ_Types
 		move.w	(sp)+,d2
-		jmp	(MoveWithPlatform2).l			; update Sonic's position
+		jmp	(MoveWithPlatform2).l		; update Sonic's position
 ; ===========================================================================
 
 Circ_Types:
@@ -78,7 +78,7 @@ Circ_Clockwise:
 	@not_2_or_3:
 		btst	#2,ost_subtype(a0)
 		beq.s	@anticlockwise
-		neg.w	d1					; reverse x position delta
+		neg.w	d1				; reverse x position delta
 
 	@anticlockwise:
 		add.w	ost_circ_x_start(a0),d1

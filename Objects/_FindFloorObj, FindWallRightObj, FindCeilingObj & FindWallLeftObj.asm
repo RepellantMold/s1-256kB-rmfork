@@ -24,17 +24,17 @@ FindFloorObj2:
 		moveq	#0,d0
 		move.b	ost_height(a0),d0
 		ext.w	d0
-		add.w	d0,d2					; d2 = y pos of bottom edge
-		lea	(v_angle_right).w,a4			; write angle here
+		add.w	d0,d2				; d2 = y pos of bottom edge
+		lea	(v_angle_right).w,a4		; write angle here
 		move.b	#0,(a4)
-		movea.w	#$10,a3					; height of a 16x16 tile
+		movea.w	#$10,a3				; height of a 16x16 tile
 		move.w	#0,d6
-		moveq	#tilemap_solid_top_bit,d5		; bit to test for solidness
+		moveq	#tilemap_solid_top_bit,d5	; bit to test for solidness
 		bsr.w	FindFloor
 		move.b	(v_angle_right).w,d3
-		btst	#0,d3					; is angle snap bit set?
+		btst	#0,d3				; is angle snap bit set?
 		beq.s	@no_snap
-		move.b	#0,d3					; snap to flat floor
+		move.b	#0,d3				; snap to flat floor
 
 	@no_snap:
 		rts
@@ -60,16 +60,16 @@ include_FindWallRightObj:	macro
 FindWallRightObj:
 		add.w	ost_x_pos(a0),d3
 		move.w	ost_y_pos(a0),d2
-		lea	(v_angle_right).w,a4			; write angle here
+		lea	(v_angle_right).w,a4		; write angle here
 		move.b	#0,(a4)
-		movea.w	#$10,a3					; width of a 16x16 tile
+		movea.w	#$10,a3				; width of a 16x16 tile
 		move.w	#0,d6
-		moveq	#tilemap_solid_lrb_bit,d5		; bit to test for solidness
+		moveq	#tilemap_solid_lrb_bit,d5	; bit to test for solidness
 		bsr.w	FindWall
 		move.b	(v_angle_right).w,d3
-		btst	#0,d3					; is angle snap bit set?
+		btst	#0,d3				; is angle snap bit set?
 		beq.s	@no_snap
-		move.b	#$C0,d3					; snap to flat right wall
+		move.b	#$C0,d3				; snap to flat right wall
 
 	@no_snap:
 		rts
@@ -98,17 +98,17 @@ FindCeilingObj:
 		moveq	#0,d0
 		move.b	ost_height(a0),d0
 		ext.w	d0
-		sub.w	d0,d2					; d2 = y pos of top edge
+		sub.w	d0,d2				; d2 = y pos of top edge
 		eori.w	#$F,d2
-		lea	(v_angle_right).w,a4			; write angle here
-		movea.w	#-$10,a3				; height of a 16x16 tile
-		move.w	#tilemap_yflip,d6			; eor mask
-		moveq	#tilemap_solid_lrb_bit,d5		; bit to test for solidness
+		lea	(v_angle_right).w,a4		; write angle here
+		movea.w	#-$10,a3			; height of a 16x16 tile
+		move.w	#tilemap_yflip,d6		; eor mask
+		moveq	#tilemap_solid_lrb_bit,d5	; bit to test for solidness
 		bsr.w	FindFloor
 		move.b	(v_angle_right).w,d3
-		btst	#0,d3					; is angle snap bit set?
+		btst	#0,d3				; is angle snap bit set?
 		beq.s	@no_snap
-		move.b	#$80,d3					; snap to flat ceiling
+		move.b	#$80,d3				; snap to flat ceiling
 
 	@no_snap:
 		rts
@@ -139,16 +139,16 @@ FindWallLeftObj:
 		; Engine bug: colliding with left walls is erratic with this function.
 		; Caused by a missing instruction to flip collision on the 16x16 block.
 		;eori.w	#$F,d3					; enable this line to fix bug
-		lea	(v_angle_right).w,a4			; write angle here
+		lea	(v_angle_right).w,a4		; write angle here
 		move.b	#0,(a4)
-		movea.w	#-$10,a3				; width of a 16x16 tile
-		move.w	#tilemap_xflip,d6			; eor mask
-		moveq	#tilemap_solid_lrb_bit,d5		; bit to test for solidness
+		movea.w	#-$10,a3			; width of a 16x16 tile
+		move.w	#tilemap_xflip,d6		; eor mask
+		moveq	#tilemap_solid_lrb_bit,d5	; bit to test for solidness
 		bsr.w	FindWall
 		move.b	(v_angle_right).w,d3
-		btst	#0,d3					; is angle snap bit set?
+		btst	#0,d3				; is angle snap bit set?
 		beq.s	@no_snap
-		move.b	#$40,d3					; snap to flat left wall
+		move.b	#$40,d3				; snap to flat left wall
 
 	@no_snap:
 		rts

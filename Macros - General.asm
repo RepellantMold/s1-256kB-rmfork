@@ -22,13 +22,13 @@ index:		macro
 		pusho
 		opt	m-
 
-		if strlen("\1")>0	; check if start is defined
+		if strlen("\1")>0			; check if start is defined
 		index_start: = \1
 		else
 		index_start: = -1
 		endc
-		if strlen("\0")=0	; check if width is defined (b, w, l)
-		index_width: equs "w"	; use w by default
+		if strlen("\0")=0			; check if width is defined (b, w, l)
+		index_width: equs "w"			; use w by default
 		else
 		index_width: equs "\0"
 		endc
@@ -43,18 +43,18 @@ index:		macro
 		fail
 		endc
 		
-		if strlen("\2")=0	; check if first pointer id is defined
-		ptr_id: = 0		; use 0 by default
+		if strlen("\2")=0			; check if first pointer id is defined
+		ptr_id: = 0				; use 0 by default
 		else
 		ptr_id: = \2
 		endc
-		if strlen("\3")=0	; check if pointer id increment is defined
-		ptr_id_inc: = 1		; use 1 by default
+		if strlen("\3")=0			; check if pointer id increment is defined
+		ptr_id_inc: = 1				; use 1 by default
 		else
 		ptr_id_inc: = \3
 		endc
 		
-		tmp_array: equs "empty"	; clear tmp_array
+		tmp_array: equs "empty"			; clear tmp_array
 
 		popo
 		list
@@ -74,15 +74,15 @@ mirror_index:	macro
 		index.\0 \1,\2,\3
 		ptr_prefix: equs "\4"
 		ptr_pos: = 1
-		ptr_bar: = instr(1,"\5","|")	; find first bar
+		ptr_bar: = instr(1,"\5","|")		; find first bar
 		while ptr_bar>0
-		ptr_sub: substr ptr_pos,ptr_bar-1,"\5" ; get label
-		ptr \ptr_prefix\_\ptr_sub	; create pointer
+		ptr_sub: substr ptr_pos,ptr_bar-1,"\5"	; get label
+		ptr \ptr_prefix\_\ptr_sub		; create pointer
 		ptr_pos: = ptr_bar+1
-		ptr_bar: = instr(ptr_pos,"\5","|") ; find next bar
+		ptr_bar: = instr(ptr_pos,"\5","|")	; find next bar
 		endw
 		ptr_sub: substr ptr_pos,,"\5"
-		ptr \ptr_prefix\_\ptr_sub	; final pointer
+		ptr \ptr_prefix\_\ptr_sub		; final pointer
 
 		popo
 		list
@@ -108,7 +108,7 @@ ptr:		macro
 		prefix_id: equs "id_"
 		endc
 		
-		if instr("\1","@")=1	; check if pointer is local
+		if instr("\1","@")=1			; check if pointer is local
 		else
 			if ~def(\prefix_id\\1)
 			\prefix_id\\1: equ ptr_id	; create id for pointer
@@ -117,17 +117,17 @@ ptr:		macro
 			endc
 		endc
 		
-		if strlen("\2")=0	; check if label should be stored
+		if strlen("\2")=0			; check if label should be stored
 		else
 			if strcmp("\tmp_array","empty")
-			tmp_array: equs "\1"	; store first label
+			tmp_array: equs "\1"		; store first label
 			else
-			tmp_array: equs "\tmp_array|\1" ; store subsequent labels
+			tmp_array: equs "\tmp_array|\1"	; store subsequent labels
 			endc
 		\2: equs tmp_array
 		endc
 		
-		ptr_id: = ptr_id+ptr_id_inc ; increment id
+		ptr_id: = ptr_id+ptr_id_inc		; increment id
 
 		popo
 		list
@@ -202,8 +202,8 @@ dma_fill:	macro value,length,loc
 ; ---------------------------------------------------------------------------
 
 disable_display:	macro
-		move.w	(v_vdp_mode_buffer).w,d0		; $81xx
-		andi.b	#$BF,d0					; clear bit 6
+		move.w	(v_vdp_mode_buffer).w,d0	; $81xx
+		andi.b	#$BF,d0				; clear bit 6
 		move.w	d0,(vdp_control_port).l
 		endm
 
@@ -212,7 +212,7 @@ disable_display:	macro
 ; ---------------------------------------------------------------------------
 
 enable_display:	macro
-		move.w	(v_vdp_mode_buffer).w,d0		; $81xx
-		ori.b	#$40,d0					; set bit 6
+		move.w	(v_vdp_mode_buffer).w,d0	; $81xx
+		ori.b	#$40,d0				; set bit 6
 		move.w	d0,(vdp_control_port).l
 		endm

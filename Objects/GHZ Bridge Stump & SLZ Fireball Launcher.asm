@@ -18,9 +18,9 @@ Scen_Index:	index *
 ; ===========================================================================
 
 Scen_Main:	; Routine 0
-		addq.b	#2,ost_routine(a0)			; goto Scen_ChkDel next
+		addq.b	#2,ost_routine(a0)		; goto Scen_ChkDel next
 		moveq	#0,d0
-		move.b	ost_subtype(a0),d0			; copy object subtype to d0
+		move.b	ost_subtype(a0),d0		; copy object subtype to d0
 		lea	Scen_Values(pc,d0.w),a1
 		move.l	(a1)+,ost_mappings(a0)
 		move.w	(a1)+,ost_tile(a0)
@@ -37,9 +37,9 @@ Scen_ChkDel:	; Routine 2
 ; Variables for	object $1C are stored in an array
 ; ---------------------------------------------------------------------------
 Scen_Values:
-Scen_Values_0:	dc.l Map_Scen					; mappings address
-		dc.w $3F9+tile_pal3		; VRAM setting
-		dc.b id_frame_scen_cannon, 8, 2, 0		; frame, width, priority, collision response
+Scen_Values_0:	dc.l Map_Scen				; mappings address
+		dc.w $3F9+tile_pal3			; VRAM setting
+		dc.b id_frame_scen_cannon, 8, 2, 0	; frame, width, priority, collision response
 		
 Scen_Values_3:	dc.l Map_Bri
 		dc.w $33E+tile_pal3

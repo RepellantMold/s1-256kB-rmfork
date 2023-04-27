@@ -26,23 +26,23 @@ FireM_Settings:	dc.b ost_id,id_FireBall
 ; ===========================================================================
 
 FireM_Main:	; Routine 0
-		addq.b	#2,ost_routine(a0)			; goto FireM_MakeFire next
+		addq.b	#2,ost_routine(a0)		; goto FireM_MakeFire next
 		move.b	ost_subtype(a0),d0
 		lsr.b	#4,d0
 		addq.b	#1,d0
 		mulu.w	#30,d0
 		move.b	d0,ost_anim_delay(a0)
-		move.b	ost_anim_delay(a0),ost_anim_time(a0)	; set time delay for fireballs
-		andi.b	#$F,ost_subtype(a0)			; get low nybble of subtype (speed/direction)
+		move.b	ost_anim_delay(a0),ost_anim_time(a0) ; set time delay for fireballs
+		andi.b	#$F,ost_subtype(a0)		; get low nybble of subtype (speed/direction)
 
 FireM_MakeFire:	; Routine 2
-		subq.b	#1,ost_anim_time(a0)			; decrement timer
-		bne.s	@wait					; if time remains, branch
-		move.b	ost_anim_delay(a0),ost_anim_time(a0)	; reset time delay
-		bsr.w	CheckOffScreen				; is object on-screen?
-		bne.s	@wait					; if not, branch
-		bsr.w	FindFreeObj				; find free OST slot
-		bne.s	@wait					; branch if not found
+		subq.b	#1,ost_anim_time(a0)		; decrement timer
+		bne.s	@wait				; if time remains, branch
+		move.b	ost_anim_delay(a0),ost_anim_time(a0) ; reset time delay
+		bsr.w	CheckOffScreen			; is object on-screen?
+		bne.s	@wait				; if not, branch
+		bsr.w	FindFreeObj			; find free OST slot
+		bne.s	@wait				; branch if not found
 		lea	FireM_Settings(pc),a2
 		bsr.w	SetupChild
 

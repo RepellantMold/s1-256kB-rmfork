@@ -18,8 +18,8 @@ Moto_Index:	index *,,2
 		ptr Moto_Animate
 		ptr Moto_Delete
 
-ost_moto_wait_time:	equ $30					; time delay before changing direction (2 bytes)
-ost_moto_smoke_time:	equ $33					; time delay between smoke puffs
+ost_moto_wait_time:	equ $30				; time delay before changing direction (2 bytes)
+ost_moto_smoke_time:	equ $33				; time delay between smoke puffs
 
 Moto_Settings:	dc.b ost_height,14
 		dc.b ost_width,8
@@ -37,16 +37,16 @@ Moto_Settings:	dc.b ost_height,14
 
 Moto_Main:	; Routine 0
 		lea	Moto_Settings(pc),a2
-		tst.b	ost_anim(a0)				; is object a smoke trail?
-		bne.s	@smoke					; if yes, branch
+		tst.b	ost_anim(a0)			; is object a smoke trail?
+		bne.s	@smoke				; if yes, branch
 		bsr.w	SetupObject
-		bsr.w	ObjectFall				; apply gravity and update position
+		bsr.w	ObjectFall			; apply gravity and update position
 		jsr	(FindFloorObj).l
-		tst.w	d1					; has motobug hit the floor?
-		bpl.s	@notonfloor				; if not, branch
-		add.w	d1,ost_y_pos(a0)			; align to floor
-		move.w	#0,ost_y_vel(a0)			; stop falling
-		addq.b	#2,ost_routine(a0)			; goto Moto_Action next
+		tst.w	d1				; has motobug hit the floor?
+		bpl.s	@notonfloor			; if not, branch
+		add.w	d1,ost_y_pos(a0)		; align to floor
+		move.w	#0,ost_y_vel(a0)		; stop falling
+		addq.b	#2,ost_routine(a0)		; goto Moto_Action next
 		bchg	#status_xflip_bit,ost_status(a0)
 
 	@notonfloor:
@@ -56,7 +56,7 @@ Moto_Main:	; Routine 0
 @smoke:
 		adda.w	#6,a2
 		bsr.w	SetupObject
-		addq.b	#4,ost_routine(a0)			; goto Moto_Animate next
+		addq.b	#4,ost_routine(a0)		; goto Moto_Animate next
 		bra.w	Moto_Animate
 ; ===========================================================================
 
@@ -79,33 +79,33 @@ Moto_ActIndex:	index *
 ; ===========================================================================
 
 Moto_Move:
-		subq.w	#1,ost_moto_wait_time(a0)		; decrement wait timer
-		bpl.s	@wait					; if time remains, branch
-		addq.b	#2,ost_routine2(a0)			; goto Moto_FindFloor next
-		move.w	#-$100,ost_x_vel(a0)			; move object to the left
+		subq.w	#1,ost_moto_wait_time(a0)	; decrement wait timer
+		bpl.s	@wait				; if time remains, branch
+		addq.b	#2,ost_routine2(a0)		; goto Moto_FindFloor next
+		move.w	#-$100,ost_x_vel(a0)		; move object to the left
 		move.b	#id_ani_moto_walk,ost_anim(a0)
 		bchg	#status_xflip_bit,ost_status(a0)
 		bne.s	@wait
-		neg.w	ost_x_vel(a0)				; change direction
+		neg.w	ost_x_vel(a0)			; change direction
 
 	@wait:
 		rts	
 ; ===========================================================================
 
 Moto_FindFloor:
-		bsr.w	SpeedToPos				; update position
-		jsr	(FindFloorObj).l			; d1 = distance to floor
+		bsr.w	SpeedToPos			; update position
+		jsr	(FindFloorObj).l		; d1 = distance to floor
 		cmpi.w	#-8,d1
 		blt.s	@pause
 		cmpi.w	#$C,d1
-		bge.s	@pause					; branch if object is more than 11px above or 8px below floor
+		bge.s	@pause				; branch if object is more than 11px above or 8px below floor
 
-		add.w	d1,ost_y_pos(a0)			; align to floor
-		subq.b	#1,ost_moto_smoke_time(a0)		; decrement time between smoke puffs
-		bpl.s	@nosmoke				; branch if time remains
-		move.b	#$F,ost_moto_smoke_time(a0)		; reset timer
-		bsr.w	FindFreeObj				; find free OST slot
-		bne.s	@nosmoke				; branch if not found
+		add.w	d1,ost_y_pos(a0)		; align to floor
+		subq.b	#1,ost_moto_smoke_time(a0)	; decrement time between smoke puffs
+		bpl.s	@nosmoke			; branch if time remains
+		move.b	#$F,ost_moto_smoke_time(a0)	; reset timer
+		bsr.w	FindFreeObj			; find free OST slot
+		bne.s	@nosmoke			; branch if not found
 		lea	Moto_Settings2(pc),a2
 		bsr.w	SetupChild
 
@@ -113,9 +113,9 @@ Moto_FindFloor:
 		rts	
 
 @pause:
-		subq.b	#2,ost_routine2(a0)			; goto Moto_Move next
-		move.w	#59,ost_moto_wait_time(a0)		; set pause time to 1 second
-		move.w	#0,ost_x_vel(a0)			; stop the object moving
+		subq.b	#2,ost_routine2(a0)		; goto Moto_Move next
+		move.w	#59,ost_moto_wait_time(a0)	; set pause time to 1 second
+		move.w	#0,ost_x_vel(a0)		; stop the object moving
 		move.b	#id_ani_moto_stand,ost_anim(a0)
 		rts
 
@@ -130,7 +130,7 @@ Moto_Settings2:	dc.b ost_id,id_MotoBug
 
 Moto_Animate:	; Routine 4
 		lea	(Ani_Moto).l,a1
-		bsr.w	AnimateSprite				; if smoke animation, goto Moto_Delete next
+		bsr.w	AnimateSprite			; if smoke animation, goto Moto_Delete next
 		bra.w	DisplaySprite
 ; ===========================================================================
 

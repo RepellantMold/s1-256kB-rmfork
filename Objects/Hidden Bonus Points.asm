@@ -17,7 +17,7 @@ Bonus_Index:	index *,,2
 		ptr Bonus_Main
 		ptr Bonus_Display
 
-ost_bonus_wait_time:	equ $30					; length of time to display bonus sprites (2 bytes)
+ost_bonus_wait_time:	equ $30				; length of time to display bonus sprites (2 bytes)
 
 Bonus_Settings:	dc.b ost_routine,2
 		dc.b so_write_long,ost_mappings
@@ -34,32 +34,32 @@ Bonus_Settings:	dc.b ost_routine,2
 ; ===========================================================================
 
 Bonus_Main:	; Routine 0
-		moveq	#$10,d2					; radius
+		moveq	#$10,d2				; radius
 		move.w	d2,d3
 		add.w	d3,d3
 		lea	(v_ost_player).w,a1
 		move.w	ost_x_pos(a1),d0
-		sub.w	ost_x_pos(a0),d0			; d0 = Sonic's distance from item (-ve if Sonic is left, +ve if right)
-		add.w	d2,d0					; add radius
-		cmp.w	d3,d0					; is Sonic within item's width?
-		bcc.s	@chkdel					; if not, branch
+		sub.w	ost_x_pos(a0),d0		; d0 = Sonic's distance from item (-ve if Sonic is left, +ve if right)
+		add.w	d2,d0				; add radius
+		cmp.w	d3,d0				; is Sonic within item's width?
+		bcc.s	@chkdel				; if not, branch
 		move.w	ost_y_pos(a1),d1
 		sub.w	ost_y_pos(a0),d1
 		add.w	d2,d1
-		cmp.w	d3,d1					; is Sonic within item's height?
-		bcc.s	@chkdel					; if not, branch
+		cmp.w	d3,d1				; is Sonic within item's height?
+		bcc.s	@chkdel				; if not, branch
 
-		tst.b	(f_giantring_collected).w		; has giant ring been collected?
-		bne.s	@chkdel					; if yes, branch
+		tst.b	(f_giantring_collected).w	; has giant ring been collected?
+		bne.s	@chkdel				; if yes, branch
 
 		lea	Bonus_Settings(pc),a2
 		bsr.w	SetupObject
-		play.w	1, jsr, sfx_Bonus			; play bonus sound
+		play.w	1, jsr, sfx_Bonus		; play bonus sound
 		moveq	#0,d0
 		move.b	ost_subtype(a0),d0
 		add.w	d0,d0
-		move.w	Bonus_Points(pc,d0.w),d0		; load bonus points from array
-		jsr	(AddPoints).l				; add points and update HUD
+		move.w	Bonus_Points(pc,d0.w),d0	; load bonus points from array
+		jsr	(AddPoints).l			; add points and update HUD
 
 	@chkdel:
 		out_of_range.s	@delete
@@ -71,14 +71,14 @@ Bonus_Display_del:
 
 ; ===========================================================================
 Bonus_Points:	; Bonus	points array
-Bonus_Points_0:	dc.w 0						; subtype 0 - 0 points (unused)
-Bonus_Points_1:	dc.w 1000					; subtype 1 - 10000 points
-Bonus_Points_2:	dc.w 100					; subtype 2 - 1000 points
-Bonus_Points_3:	dc.w 1						; subtype 3 - 10 points (should be 100)
+Bonus_Points_0:	dc.w 0					; subtype 0 - 0 points (unused)
+Bonus_Points_1:	dc.w 1000				; subtype 1 - 10000 points
+Bonus_Points_2:	dc.w 100				; subtype 2 - 1000 points
+Bonus_Points_3:	dc.w 1					; subtype 3 - 10 points (should be 100)
 ; ===========================================================================
 
 Bonus_Display:	; Routine 2
-		subq.w	#1,ost_bonus_wait_time(a0)		; decrement display time
-		bmi.s	Bonus_Display_del					; if time is zero, branch
+		subq.w	#1,ost_bonus_wait_time(a0)	; decrement display time
+		bmi.s	Bonus_Display_del		; if time is zero, branch
 		out_of_range.s	Bonus_Display_del
 		jmp	(DisplaySprite).l

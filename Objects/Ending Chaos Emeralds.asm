@@ -16,10 +16,10 @@ ECha_Index:	index *,,2
 		ptr ECha_Main
 		ptr ECha_Move
 
-ost_echaos_x_start:	equ $38					; x-axis centre of emerald circle (2 bytes)
-ost_echaos_y_start:	equ $3A					; y-axis centre of emerald circle (2 bytes)
-ost_echaos_radius:	equ $3C					; radius (2 bytes)
-ost_echaos_angle:	equ $3E					; angle for rotation (2 bytes)
+ost_echaos_x_start:	equ $38				; x-axis centre of emerald circle (2 bytes)
+ost_echaos_y_start:	equ $3A				; y-axis centre of emerald circle (2 bytes)
+ost_echaos_radius:	equ $3C				; radius (2 bytes)
+ost_echaos_angle:	equ $3E				; angle for rotation (2 bytes)
 
 ECha_Settings:	dc.b ost_id,id_EndChaos
 		dc.b ost_routine,2
@@ -39,7 +39,7 @@ ECha_Settings:	dc.b ost_id,id_EndChaos
 
 ECha_Main:	; Routine 0
 		cmpi.b	#id_frame_esonic_up,(v_ost_player+ost_frame).w ; is Sonic looking up?
-		beq.s	ECha_CreateEms				; if yes, branch
+		beq.s	ECha_CreateEms			; if yes, branch
 		addq.l	#4,sp
 		rts	
 ; ===========================================================================
@@ -59,9 +59,9 @@ ECha_CreateEms:
 		move.b	d2,ost_frame(a1)
 		addq.b	#1,d2
 		move.b	d3,ost_angle(a1)
-		addi.b	#$100/6,d3				; angle between each emerald
+		addi.b	#$100/6,d3			; angle between each emerald
 		lea	sizeof_ost(a1),a1
-		dbf	d4,ECha_LoadLoop			; repeat 5 more times
+		dbf	d4,ECha_LoadLoop		; repeat 5 more times
 
 ECha_Move:	; Routine 2
 		move.w	ost_echaos_angle(a0),d0
@@ -73,17 +73,17 @@ ECha_Move:	; Routine 2
 	ECha_Expand:
 		cmpi.w	#$2000,ost_echaos_radius(a0)
 		beq.s	ECha_Rotate
-		addi.w	#$20,ost_echaos_radius(a0)		; expand circle of emeralds
+		addi.w	#$20,ost_echaos_radius(a0)	; expand circle of emeralds
 
 	ECha_Rotate:
 		cmpi.w	#$2000,ost_echaos_angle(a0)
 		beq.s	ECha_Rise
-		addi.w	#$20,ost_echaos_angle(a0)		; move emeralds around the centre
+		addi.w	#$20,ost_echaos_angle(a0)	; move emeralds around the centre
 
 	ECha_Rise:
 		cmpi.w	#$140,ost_echaos_y_start(a0)
 		beq.s	ECha_End
-		subq.w	#1,ost_echaos_y_start(a0)		; make circle rise
+		subq.w	#1,ost_echaos_y_start(a0)	; make circle rise
 
 ECha_End:
 		rts	

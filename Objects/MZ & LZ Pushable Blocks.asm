@@ -17,15 +17,15 @@ PushB_Index:	index *,,2
 		ptr PushB_ChkVisible
 
 PushB_Var:
-PushB_Var_0:	dc.b $10, id_frame_pblock_single		; object width,	frame number
+PushB_Var_0:	dc.b $10, id_frame_pblock_single	; object width,	frame number
 PushB_Var_1:	dc.b $40, id_frame_pblock_four
 
 sizeof_PushB_Var:	equ PushB_Var_1-PushB_Var
 
-ost_pblock_lava_speed:	equ $30					; x axis speed when block is on lava (2 bytes)
-ost_pblock_lava_flag:	equ $32					; 1 = block is on lava
-ost_pblock_x_start:	equ $34					; original x position (2 bytes)
-ost_pblock_y_start:	equ $36					; original y position (2 bytes)
+ost_pblock_lava_speed:	equ $30				; x axis speed when block is on lava (2 bytes)
+ost_pblock_lava_flag:	equ $32				; 1 = block is on lava
+ost_pblock_x_start:	equ $34				; original x position (2 bytes)
+ost_pblock_y_start:	equ $36				; original y position (2 bytes)
 
 PushB_Settings:	dc.b ost_routine,2
 		dc.b ost_height,15
@@ -46,9 +46,9 @@ PushB_Settings:	dc.b ost_routine,2
 PushB_Main:	; Routine 0
 		lea	PushB_Settings(pc),a2
 		bsr.w	SetupObject
-		cmpi.b	#1,(v_zone).w				; is current zone Labyrinth?
-		bne.s	@notLZ					; if not, branch
-		move.w	#$3DE+tile_pal3,ost_tile(a0)		; LZ specific code
+		cmpi.b	#1,(v_zone).w			; is current zone Labyrinth?
+		bne.s	@notLZ				; if not, branch
+		move.w	#$3DE+tile_pal3,ost_tile(a0)	; LZ specific code
 
 	@notLZ:
 		btst	#0,ost_subtype(a0)
@@ -56,9 +56,9 @@ PushB_Main:	; Routine 0
 		move.b	#$40,ost_actwidth(a0)
 		move.b	#id_frame_pblock_four,ost_frame(a0)
 	@not_1:
-		tst.b	ost_subtype(a0)				; is subtype 0?
-		beq.s	@chkgone				; if yes, branch
-		bset	#tile_hi_bit,ost_tile(a0)		; make sprite appear in foreground
+		tst.b	ost_subtype(a0)			; is subtype 0?
+		beq.s	@chkgone			; if yes, branch
+		bset	#tile_hi_bit,ost_tile(a0)	; make sprite appear in foreground
 
 	@chkgone:
 		lea	(v_respawn_list).w,a2
@@ -70,29 +70,29 @@ PushB_Main:	; Routine 0
 		bne.w	DeleteObject
 
 PushB_Action:	; Routine 2
-		tst.b	ost_pblock_lava_flag(a0)		; is block on lava?
-		bne.w	PushB_OnLava				; if yes, branch
+		tst.b	ost_pblock_lava_flag(a0)	; is block on lava?
+		bne.w	PushB_OnLava			; if yes, branch
 		moveq	#0,d1
 		move.b	ost_actwidth(a0),d1
 		addi.w	#$B,d1
 		move.w	#$10,d2
 		move.w	#$11,d3
 		move.w	ost_x_pos(a0),d4
-		bsr.w	PushB_Solid				; make block solid & update its position
-		cmpi.w	#(id_MZ<<8)+0,(v_zone).w		; is the level MZ act 1?
-		bne.s	PushB_Display				; if not, branch
+		bsr.w	PushB_Solid			; make block solid & update its position
+		cmpi.w	#(id_MZ<<8)+0,(v_zone).w	; is the level MZ act 1?
+		bne.s	PushB_Display			; if not, branch
 		bclr	#7,ost_subtype(a0)
 		move.w	ost_x_pos(a0),d0
 		cmpi.w	#$A20,d0
 		bcs.s	PushB_Display
-		cmpi.w	#$AA1,d0				; is block between $A20 and $AA1 on x axis?
-		bcc.s	PushB_Display				; if not, branch
+		cmpi.w	#$AA1,d0			; is block between $A20 and $AA1 on x axis?
+		bcc.s	PushB_Display			; if not, branch
 		
-		move.w	(v_cstomp_y_pos).w,d0			; get y pos of nearby chain stomper
+		move.w	(v_cstomp_y_pos).w,d0		; get y pos of nearby chain stomper
 		subi.w	#$1C,d0
-		move.w	d0,ost_y_pos(a0)			; set y pos of block so it's resting on the stomper
-		bset	#7,(v_cstomp_y_pos).w			; set high bit of high byte of stomper y pos
-		bset	#7,ost_subtype(a0)			; set flag to disable gravity for block
+		move.w	d0,ost_y_pos(a0)		; set y pos of block so it's resting on the stomper
+		bset	#7,(v_cstomp_y_pos).w		; set high bit of high byte of stomper y pos
+		bset	#7,ost_subtype(a0)		; set flag to disable gravity for block
 
 	PushB_Display:
 		out_of_range.s	PushB_ChkDel
@@ -120,8 +120,8 @@ PushB_ChkDel2:
 
 PushB_ChkVisible:
 		; Routine 4
-		bsr.w	CheckOffScreen_Wide			; is block still on screen?
-		beq.s	@visible				; if yes, branch
+		bsr.w	CheckOffScreen_Wide		; is block still on screen?
+		beq.s	@visible			; if yes, branch
 		move.b	#id_PushB_Action,ost_routine(a0)
 		clr.b	ost_pblock_lava_flag(a0)
 		clr.w	ost_x_vel(a0)
@@ -134,26 +134,26 @@ PushB_ChkVisible:
 PushB_OnLava:
 		move.w	ost_x_pos(a0),-(sp)
 		cmpi.b	#4,ost_routine2(a0)
-		bcc.s	@pushing				; branch if ost_routine2 = 4 or 6 (PushB_Solid_Lava/PushB_Solid_Push)
-		bsr.w	SpeedToPos				; update position
+		bcc.s	@pushing			; branch if ost_routine2 = 4 or 6 (PushB_Solid_Lava/PushB_Solid_Push)
+		bsr.w	SpeedToPos			; update position
 
 	@pushing:
-		btst	#status_air_bit,ost_status(a0)		; has block been thrown into the air?
-		beq.s	PushB_OnLava_ChkWall			; if not, branch
-		addi.w	#$18,ost_y_vel(a0)			; apply gravity
+		btst	#status_air_bit,ost_status(a0)	; has block been thrown into the air?
+		beq.s	PushB_OnLava_ChkWall		; if not, branch
+		addi.w	#$18,ost_y_vel(a0)		; apply gravity
 		jsr	(FindFloorObj).l
-		tst.w	d1					; has block hit the floor?
-		bpl.w	@goto_solid				; if not, branch
-		add.w	d1,ost_y_pos(a0)			; align to floor
-		clr.w	ost_y_vel(a0)				; stop falling
+		tst.w	d1				; has block hit the floor?
+		bpl.w	@goto_solid			; if not, branch
+		add.w	d1,ost_y_pos(a0)		; align to floor
+		clr.w	ost_y_vel(a0)			; stop falling
 		bclr	#status_air_bit,ost_status(a0)
-		move.w	(a1),d0					; get 16x16 tile the block is on
+		move.w	(a1),d0				; get 16x16 tile the block is on
 		andi.w	#$3FF,d0
-		cmpi.w	#$11F,d0				; is it block $16A+ (lava)?
-		bcs.s	@goto_solid				; if not, branch
+		cmpi.w	#$11F,d0			; is it block $16A+ (lava)?
+		bcs.s	@goto_solid			; if not, branch
 		move.w	ost_pblock_lava_speed(a0),d0
 		asr.w	#3,d0
-		move.w	d0,ost_x_vel(a0)			; make block float horizontally
+		move.w	d0,ost_x_vel(a0)		; make block float horizontally
 		move.b	#1,ost_pblock_lava_flag(a0)
 		clr.w	ost_y_sub(a0)
 
@@ -163,15 +163,15 @@ PushB_OnLava:
 
 PushB_OnLava_ChkWall:
 		tst.w	ost_x_vel(a0)
-		beq.w	PushB_OnLava_Sink			; branch if block isn't moving
-		bmi.s	@wall_left				; branch if moving left
+		beq.w	PushB_OnLava_Sink		; branch if block isn't moving
+		bmi.s	@wall_left			; branch if moving left
 	
 	@wall_right:
 		moveq	#0,d3
 		move.b	ost_actwidth(a0),d3
 		jsr	(FindWallRightObj).l
-		tst.w	d1					; has block touched a wall?
-		bmi.s	PushB_Stop				; if yes, branch
+		tst.w	d1				; has block touched a wall?
+		bmi.s	PushB_Stop			; if yes, branch
 		bra.s	PushB_OnLava_Solid
 ; ===========================================================================
 
@@ -180,20 +180,20 @@ PushB_OnLava_ChkWall:
 		move.b	ost_actwidth(a0),d3
 		not.w	d3
 		jsr	(FindWallLeftObj).l
-		tst.w	d1					; has block touched a wall?
-		bmi.s	PushB_Stop				; if yes, branch
+		tst.w	d1				; has block touched a wall?
+		bmi.s	PushB_Stop			; if yes, branch
 		bra.s	PushB_OnLava_Solid
 ; ===========================================================================
 
 PushB_Stop:
-		clr.w	ost_x_vel(a0)				; stop block moving
+		clr.w	ost_x_vel(a0)			; stop block moving
 		bra.s	PushB_OnLava_Solid
 ; ===========================================================================
 
 PushB_OnLava_Sink:
-		addi.l	#$2001,ost_y_pos(a0)			; sink in lava, $2001 subpixels each frame
-		cmpi.b	#$A0,ost_y_sub+1(a0)			; has block been sinking for 160 frames?
-		bcc.s	PushB_OnLava_Sunk			; if yes, branch
+		addi.l	#$2001,ost_y_pos(a0)		; sink in lava, $2001 subpixels each frame
+		cmpi.b	#$A0,ost_y_sub+1(a0)		; has block been sinking for 160 frames?
+		bcc.s	PushB_OnLava_Sunk		; if yes, branch
 
 PushB_OnLava_Solid:
 		moveq	#0,d1
@@ -202,7 +202,7 @@ PushB_OnLava_Solid:
 		move.w	#$10,d2
 		move.w	#$11,d3
 		move.w	(sp)+,d4
-		bsr.w	PushB_Solid				; make block solid & update its position
+		bsr.w	PushB_Solid			; make block solid & update its position
 		bsr.s	PushB_ChkGeyser
 		bra.w	PushB_Display
 ; ===========================================================================
@@ -219,8 +219,8 @@ PushB_OnLava_Sunk:
 ; ---------------------------------------------------------------------------
 
 PushB_ChkGeyser:
-		cmpi.w	#(id_MZ<<8)+1,(v_zone).w		; is the level MZ act 2?
-		bne.s	@not_mz2				; if not, branch
+		cmpi.w	#(id_MZ<<8)+1,(v_zone).w	; is the level MZ act 2?
+		bne.s	@not_mz2			; if not, branch
 		move.w	#-$20,d2
 		cmpi.w	#$DD0,ost_x_pos(a0)
 		beq.s	PushB_LoadLava
@@ -231,8 +231,8 @@ PushB_ChkGeyser:
 		rts
 
 @not_mz2:
-		cmpi.w	#(id_MZ<<8)+2,(v_zone).w		; is the level MZ act 3?
-		bne.s	@not_mz3				; if not, branch
+		cmpi.w	#(id_MZ<<8)+2,(v_zone).w	; is the level MZ act 3?
+		bne.s	@not_mz3			; if not, branch
 		move.w	#$20,d2
 		cmpi.w	#$560,ost_x_pos(a0)
 		beq.s	PushB_LoadLava
@@ -244,8 +244,8 @@ PushB_ChkGeyser:
 ; ===========================================================================
 
 PushB_LoadLava:
-		bsr.w	FindFreeObj				; find free OST slot
-		bne.s	@fail					; branch if not found
+		bsr.w	FindFreeObj			; find free OST slot
+		bne.s	@fail				; branch if not found
 		lea	PushB_Settings2(pc),a2
 		bsr.w	SetupChild
 		add.w	d2,ost_x_pos(a1)
@@ -274,13 +274,13 @@ PushB_Settings2:
 
 PushB_Solid:
 		move.b	ost_routine2(a0),d0
-		beq.w	PushB_Solid_Detect			; branch if ost_routine2 = 0
+		beq.w	PushB_Solid_Detect		; branch if ost_routine2 = 0
 		subq.b	#2,d0
-		bne.s	PushB_Solid_Lava			; branch if ost_routine2 > 2
+		bne.s	PushB_Solid_Lava		; branch if ost_routine2 > 2
 
 		bsr.w	ExitPlatform
 		btst	#status_platform_bit,ost_status(a1)
-		bne.s	@on_block				; branch if Sonic is on the block
+		bne.s	@on_block			; branch if Sonic is on the block
 		clr.b	ost_routine2(a0)
 		rts
 
@@ -291,22 +291,22 @@ PushB_Solid:
 
 PushB_Solid_Lava:
 		subq.b	#2,d0
-		bne.s	PushB_Solid_Push			; branch if ost_routine2 = 6
-		bsr.w	SpeedToPos				; update position
-		addi.w	#$18,ost_y_vel(a0)			; apply gravity
+		bne.s	PushB_Solid_Push		; branch if ost_routine2 = 6
+		bsr.w	SpeedToPos			; update position
+		addi.w	#$18,ost_y_vel(a0)		; apply gravity
 		jsr	(FindFloorObj).l
-		tst.w	d1					; has object hit the floor?
-		bpl.w	@exit					; if not, branch
-		add.w	d1,ost_y_pos(a0)			; align to floor
-		clr.w	ost_y_vel(a0)				; stop falling
-		clr.b	ost_routine2(a0)			; goto PushB_Solid next
-		move.w	(a1),d0					; get 16x16 tile the block is on
+		tst.w	d1				; has object hit the floor?
+		bpl.w	@exit				; if not, branch
+		add.w	d1,ost_y_pos(a0)		; align to floor
+		clr.w	ost_y_vel(a0)			; stop falling
+		clr.b	ost_routine2(a0)		; goto PushB_Solid next
+		move.w	(a1),d0				; get 16x16 tile the block is on
 		andi.w	#$3FF,d0
-		cmpi.w	#$11F,d0				; is it block $16A+ (lava)?
-		bcs.s	@exit					; if not, branch
+		cmpi.w	#$11F,d0			; is it block $16A+ (lava)?
+		bcs.s	@exit				; if not, branch
 		move.w	ost_pblock_lava_speed(a0),d0
 		asr.w	#3,d0
-		move.w	d0,ost_x_vel(a0)			; make block float horizontally
+		move.w	d0,ost_x_vel(a0)		; make block float horizontally
 		move.b	#1,ost_pblock_lava_flag(a0)
 		clr.w	ost_y_sub(a0)
 
@@ -315,83 +315,83 @@ PushB_Solid_Lava:
 ; ===========================================================================
 
 PushB_Solid_Push:
-		bsr.w	SpeedToPos				; update position
+		bsr.w	SpeedToPos			; update position
 		move.w	ost_x_pos(a0),d0
 		andi.w	#$C,d0
-		bne.w	PushB_Solid_Exit			; branch if bits 2 or 3 of x pos are set
-		andi.w	#$FFF0,ost_x_pos(a0)			; snap to grid
-		move.w	ost_x_vel(a0),ost_pblock_lava_speed(a0)	; set speed to move on lava
+		bne.w	PushB_Solid_Exit		; branch if bits 2 or 3 of x pos are set
+		andi.w	#$FFF0,ost_x_pos(a0)		; snap to grid
+		move.w	ost_x_vel(a0),ost_pblock_lava_speed(a0) ; set speed to move on lava
 		clr.w	ost_x_vel(a0)
-		subq.b	#2,ost_routine2(a0)			; goto PushB_Solid_Lava next
+		subq.b	#2,ost_routine2(a0)		; goto PushB_Solid_Lava next
 		rts	
 ; ===========================================================================
 
 PushB_Solid_Detect:
-		bsr.w	Solid_ChkCollision			; make block solid & update flags for interaction
+		bsr.w	Solid_ChkCollision		; make block solid & update flags for interaction
 		tst.w	d4
-		beq.w	PushB_Solid_Exit			; branch if no collision
-		bmi.w	PushB_Solid_Exit			; branch if top/bottom collision
+		beq.w	PushB_Solid_Exit		; branch if no collision
+		bmi.w	PushB_Solid_Exit		; branch if top/bottom collision
 		tst.b	ost_pblock_lava_flag(a0)
-		beq.s	PushB_Solid_Side			; branch if not on lava
+		beq.s	PushB_Solid_Side		; branch if not on lava
 		bra.w	PushB_Solid_Exit
 ; ===========================================================================
 
 PushB_Solid_Side:
-		tst.w	d0					; where is Sonic?
-		beq.w	PushB_Solid_Exit			; if inside the object, branch
-		bmi.s	PushB_Solid_Left			; if left of the object, branch
-		btst	#status_xflip_bit,ost_status(a1)	; is Sonic facing left?
-		bne.w	PushB_Solid_Exit			; if yes, branch
+		tst.w	d0				; where is Sonic?
+		beq.w	PushB_Solid_Exit		; if inside the object, branch
+		bmi.s	PushB_Solid_Left		; if left of the object, branch
+		btst	#status_xflip_bit,ost_status(a1) ; is Sonic facing left?
+		bne.w	PushB_Solid_Exit		; if yes, branch
 		move.w	d0,-(sp)
 		moveq	#0,d3
 		move.b	ost_actwidth(a0),d3
 		jsr	(FindWallRightObj).l
 		move.w	(sp)+,d0
-		tst.w	d1					; has object hit right wall?
-		bmi.w	PushB_Solid_Exit			; if not, branch
-		addi.l	#$10000,ost_x_pos(a0)			; move 1px right and clear subpixels
+		tst.w	d1				; has object hit right wall?
+		bmi.w	PushB_Solid_Exit		; if not, branch
+		addi.l	#$10000,ost_x_pos(a0)		; move 1px right and clear subpixels
 		moveq	#1,d0
 		move.w	#$40,d1
 		bra.s	PushB_Solid_Side_Sonic
 ; ===========================================================================
 
 PushB_Solid_Left:
-		btst	#status_xflip_bit,ost_status(a1)	; is Sonic facing right?
-		beq.s	PushB_Solid_Exit			; if yes, branch
+		btst	#status_xflip_bit,ost_status(a1) ; is Sonic facing right?
+		beq.s	PushB_Solid_Exit		; if yes, branch
 		move.w	d0,-(sp)
 		moveq	#0,d3
 		move.b	ost_actwidth(a0),d3
 		not.w	d3
 		jsr	(FindWallLeftObj).l
 		move.w	(sp)+,d0
-		tst.w	d1					; has object hit left wall?
-		bmi.s	PushB_Solid_Exit			; if not, branch
-		subi.l	#$10000,ost_x_pos(a0)			; move 1px left and clear subpixels
+		tst.w	d1				; has object hit left wall?
+		bmi.s	PushB_Solid_Exit		; if not, branch
+		subi.l	#$10000,ost_x_pos(a0)		; move 1px left and clear subpixels
 		moveq	#-1,d0
 		move.w	#-$40,d1
 
 PushB_Solid_Side_Sonic:
 		lea	(v_ost_player).w,a1
-		add.w	d0,ost_x_pos(a1)			; + or - 1 to Sonic's x position
-		move.w	d1,ost_inertia(a1)			; + or - $40 to Sonic's inertia
+		add.w	d0,ost_x_pos(a1)		; + or - 1 to Sonic's x position
+		move.w	d1,ost_inertia(a1)		; + or - $40 to Sonic's inertia
 		move.w	#0,ost_x_vel(a1)
 		move.w	d0,-(sp)
-		play.w	1, jsr, sfx_Push			; play pushing sound
+		play.w	1, jsr, sfx_Push		; play pushing sound
 		move.w	(sp)+,d0
-		tst.b	ost_subtype(a0)				; is bit 7 of subtype set? (no gravity flag)
-		bmi.s	PushB_Solid_Exit			; if yes, branch
+		tst.b	ost_subtype(a0)			; is bit 7 of subtype set? (no gravity flag)
+		bmi.s	PushB_Solid_Exit		; if yes, branch
 		move.w	d0,-(sp)
 		jsr	(FindFloorObj).l
 		move.w	(sp)+,d0
 		cmpi.w	#4,d1
-		ble.s	@align_floor				; branch if object is within 4px of floor
+		ble.s	@align_floor			; branch if object is within 4px of floor
 		move.w	#$400,ost_x_vel(a0)
 		tst.w	d0
-		bpl.s	@moving_right				; branch if moving right
-		neg.w	ost_x_vel(a0)				; move left
+		bpl.s	@moving_right			; branch if moving right
+		neg.w	ost_x_vel(a0)			; move left
 
 	@moving_right:
-		move.b	#6,ost_routine2(a0)			; goto PushB_Solid_Push next
+		move.b	#6,ost_routine2(a0)		; goto PushB_Solid_Push next
 		bra.s	PushB_Solid_Exit
 ; ===========================================================================
 

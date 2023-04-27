@@ -37,9 +37,9 @@ TSon_Main:	; Routine 0
 		bsr.w	AnimateSprite
 
 TSon_Delay:	;Routine 2
-		subq.b	#1,ost_anim_delay(a0)			; decrement timer
-		bpl.s	@wait					; if time remains, branch
-		addq.b	#2,ost_routine(a0)			; goto TSon_Move next
+		subq.b	#1,ost_anim_delay(a0)		; decrement timer
+		bpl.s	@wait				; if time remains, branch
+		addq.b	#2,ost_routine(a0)		; goto TSon_Move next
 		bra.s	TSon_display
 
 	@wait:
@@ -47,10 +47,10 @@ TSon_Delay:	;Routine 2
 ; ===========================================================================
 
 TSon_Move:	; Routine 4
-		subq.w	#8,ost_y_screen(a0)			; move Sonic up
-		cmpi.w	#150,ost_y_screen(a0)			; has Sonic reached final position?
-		bne.s	TSon_display				; if not, branch
-		addq.b	#2,ost_routine(a0)			; goto TSon_Animate next
+		subq.w	#8,ost_y_screen(a0)		; move Sonic up
+		cmpi.w	#150,ost_y_screen(a0)		; has Sonic reached final position?
+		bne.s	TSon_display			; if not, branch
+		addq.b	#2,ost_routine(a0)		; goto TSon_Animate next
 
 	TSon_display:
 		bra.w	DisplaySprite

@@ -32,21 +32,21 @@ HUD_Main:	; Routine 0
 		jsr	SetupObject
 
 HUD_Flash:	; Routine 2
-		tst.w	(v_rings).w				; do you have any rings?
-		beq.s	@norings				; if not, branch
-		clr.b	ost_frame(a0)				; make all counters yellow
+		tst.w	(v_rings).w			; do you have any rings?
+		beq.s	@norings			; if not, branch
+		clr.b	ost_frame(a0)			; make all counters yellow
 		bra.s	@display2
 ; ===========================================================================
 
 @norings:
 		moveq	#0,d0
-		btst	#3,(v_frame_counter_low).w		; check bit that changes every 8 frames
-		bne.s	@display				; branch if set
+		btst	#3,(v_frame_counter_low).w	; check bit that changes every 8 frames
+		bne.s	@display			; branch if set
 
-		addq.w	#id_frame_hud_ringred,d0		; make ring counter flash red
-		cmpi.b	#9,(v_time_min).w			; have 9 minutes elapsed?
-		bne.s	@display				; if not, branch
-		addq.w	#id_frame_hud_timered,d0		; make time counter flash red (only flashes if you also have no rings)
+		addq.w	#id_frame_hud_ringred,d0	; make ring counter flash red
+		cmpi.b	#9,(v_time_min).w		; have 9 minutes elapsed?
+		bne.s	@display			; if not, branch
+		addq.w	#id_frame_hud_timered,d0	; make time counter flash red (only flashes if you also have no rings)
 
 	@display:
 		move.b	d0,ost_frame(a0)

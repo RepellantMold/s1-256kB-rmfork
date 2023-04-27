@@ -16,7 +16,7 @@ Flash_Index:	index *,,2
 		ptr Flash_ChkDel
 		ptr Flash_Delete
 
-ost_flash_parent:	equ $3C					; address of OST of parent object (4 bytes)
+ost_flash_parent:	equ $3C				; address of OST of parent object (4 bytes)
 
 Flash_Settings:	dc.b ost_routine,2
 		dc.b so_write_long,ost_mappings
@@ -44,31 +44,31 @@ Flash_ChkDel:	; Routine 2
 ; ---------------------------------------------------------------------------
 
 Flash_Collect:
-		subq.b	#1,ost_anim_time(a0)			; decrement timer
-		bpl.s	@exit					; branch if time remains
+		subq.b	#1,ost_anim_time(a0)		; decrement timer
+		bpl.s	@exit				; branch if time remains
 
-		move.b	#1,ost_anim_time(a0)			; set timer to 1
-		addq.b	#1,ost_frame(a0)			; next frame
-		cmpi.b	#id_frame_flash_final+1,ost_frame(a0)	; has animation finished?
-		bcc.s	@finish					; if yes, branch
+		move.b	#1,ost_anim_time(a0)		; set timer to 1
+		addq.b	#1,ost_frame(a0)		; next frame
+		cmpi.b	#id_frame_flash_final+1,ost_frame(a0) ; has animation finished?
+		bcc.s	@finish				; if yes, branch
 
-		cmpi.b	#id_frame_flash_full,ost_frame(a0)	; is 3rd frame displayed?
-		bne.s	@exit					; if not, branch
-		movea.l	ost_flash_parent(a0),a1			; get parent object address
-		move.b	#id_GRing_Delete,ost_routine(a1)	; delete parent object
-		move.b	#id_Blank,(v_ost_player+ost_anim).w	; make Sonic invisible
-		move.b	#1,(f_giantring_collected).w		; stop Sonic getting bonuses
-		clr.b	(v_invincibility).w			; remove invincibility
-		clr.b	(v_shield).w				; remove shield
+		cmpi.b	#id_frame_flash_full,ost_frame(a0) ; is 3rd frame displayed?
+		bne.s	@exit				; if not, branch
+		movea.l	ost_flash_parent(a0),a1		; get parent object address
+		move.b	#id_GRing_Delete,ost_routine(a1) ; delete parent object
+		move.b	#id_Blank,(v_ost_player+ost_anim).w ; make Sonic invisible
+		move.b	#1,(f_giantring_collected).w	; stop Sonic getting bonuses
+		clr.b	(v_invincibility).w		; remove invincibility
+		clr.b	(v_shield).w			; remove shield
 
 	@exit:
 		rts	
 ; ===========================================================================
 
 @finish:
-		addq.b	#2,ost_routine(a0)			; goto Flash_Delete next
-		move.w	#0,(v_ost_player).w			; remove Sonic object
-		addq.l	#4,sp					; don't return to Flash_ChkDel
+		addq.b	#2,ost_routine(a0)		; goto Flash_Delete next
+		move.w	#0,(v_ost_player).w		; remove Sonic object
+		addq.l	#4,sp				; don't return to Flash_ChkDel
 		rts	
 ; End of function Flash_Collect
 

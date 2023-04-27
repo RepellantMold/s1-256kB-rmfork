@@ -15,10 +15,10 @@ Flame_Index:	index *,,2
 		ptr Flame_Main
 		ptr Flame_Action
 
-ost_flame_time:		equ $30					; time until current action is complete (2 bytes)
-ost_flame_on_master:	equ $32					; time flame is on (2 bytes)
-ost_flame_off_master:	equ $34					; time flame is off (2 bytes)
-ost_flame_last_frame:	equ $36					; last frame of animation
+ost_flame_time:		equ $30				; time until current action is complete (2 bytes)
+ost_flame_on_master:	equ $32				; time flame is on (2 bytes)
+ost_flame_off_master:	equ $34				; time flame is off (2 bytes)
+ost_flame_last_frame:	equ $36				; last frame of animation
 
 Flame_Settings:	dc.b ost_routine,2
 		dc.b so_write_long,ost_mappings
@@ -36,38 +36,38 @@ Flame_Main:	; Routine 0
 		lea	Flame_Settings(pc),a2
 		bsr.w	SetupObject
 		move.b	ost_subtype(a0),d0
-		andi.w	#$F0,d0					; read 1st digit of object type
-		add.w	d0,d0					; multiply by 2
+		andi.w	#$F0,d0				; read 1st digit of object type
+		add.w	d0,d0				; multiply by 2
 		move.w	d0,ost_flame_time(a0)
-		move.w	d0,ost_flame_on_master(a0)		; set flaming time
+		move.w	d0,ost_flame_on_master(a0)	; set flaming time
 		move.b	ost_subtype(a0),d0
-		andi.w	#$F,d0					; read 2nd digit of object type
-		lsl.w	#5,d0					; multiply by $20
-		move.w	d0,ost_flame_off_master(a0)		; set pause time
+		andi.w	#$F,d0				; read 2nd digit of object type
+		lsl.w	#5,d0				; multiply by $20
+		move.w	d0,ost_flame_off_master(a0)	; set pause time
 		move.b	#id_frame_flame_pipe11,ost_flame_last_frame(a0) ; final frame = $A
-		btst	#status_yflip_bit,ost_status(a0)	; is object yflipped?
-		beq.s	Flame_Action				; if not, branch
+		btst	#status_yflip_bit,ost_status(a0) ; is object yflipped?
+		beq.s	Flame_Action			; if not, branch
 
-		move.b	#id_ani_flame_valve_on,ost_anim(a0)	; use value-style animation
+		move.b	#id_ani_flame_valve_on,ost_anim(a0) ; use value-style animation
 		move.b	#id_frame_flame_valve11,ost_flame_last_frame(a0) ; final frame = $15
 
 Flame_Action:	; Routine 2
-		subq.w	#1,ost_flame_time(a0)			; decrement timer
-		bpl.s	@wait					; if time remains, branch
+		subq.w	#1,ost_flame_time(a0)		; decrement timer
+		bpl.s	@wait				; if time remains, branch
 		move.w	ost_flame_off_master(a0),ost_flame_time(a0) ; begin pause time
-		bchg	#0,ost_anim(a0)				; switch between on/off animations
-		beq.s	@wait					; branch if previously on
+		bchg	#0,ost_anim(a0)			; switch between on/off animations
+		beq.s	@wait				; branch if previously on
 
 		move.w	ost_flame_on_master(a0),ost_flame_time(a0) ; begin flaming time
-		play.w	1, jsr, sfx_Flame			; play flame sound
+		play.w	1, jsr, sfx_Flame		; play flame sound
 
 	@wait:
 		lea	(Ani_Flame).l,a1
 		bsr.w	AnimateSprite
 		move.b	#0,ost_col_type(a0)
 		move.b	ost_flame_last_frame(a0),d0
-		cmp.b	ost_frame(a0),d0			; has flame animation finished?
-		bne.s	@harmless				; if not, branch
+		cmp.b	ost_frame(a0),d0		; has flame animation finished?
+		bne.s	@harmless			; if not, branch
 		move.b	#id_col_12x24+id_col_hurt,ost_col_type(a0) ; make object harmful
 
 	@harmless:

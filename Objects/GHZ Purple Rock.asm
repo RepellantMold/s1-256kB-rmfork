@@ -32,9 +32,9 @@ Rock_Main:	; Routine 0
 		bsr.w	SetupObject
 
 Rock_Solid:	; Routine 2
-		move.w	#$1B,d1					; width
-		move.w	#$10,d2					; height
-		move.w	#$10,d3					; height
+		move.w	#$1B,d1				; width
+		move.w	#$10,d2				; height
+		move.w	#$10,d3				; height
 		move.w	ost_x_pos(a0),d4
 		bsr.w	SolidObject
 		bsr.w	DisplaySprite
